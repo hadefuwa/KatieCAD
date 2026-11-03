@@ -12128,6 +12128,10 @@ def main():
     root = tk.Tk()
     fenstersymbol_setzen(root)
     app = CadApp(root)
+    if "--bridge" in sys.argv or os.environ.get("KATIECAD_BRIDGE") == "1":
+        from katiecad import automation
+        automation.starten(app, int(os.environ.get("KATIECAD_BRIDGE_PORT",
+                                                   automation.PORT)))
     root.mainloop()
 
 
