@@ -1,0 +1,105 @@
+{
+  "format": "katiecad-block",
+  "version": 1,
+  "block": {
+    "name": "Block11",
+    "basispunkt": [
+      0.0,
+      0.0
+    ],
+    "elemente": [
+      {
+        "typ": "linie",
+        "layer": "0",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": 0.0,
+        "y1": 0.0,
+        "x2": 0.0,
+        "y2": -3.0
+      },
+      {
+        "typ": "bogen",
+        "layer": "0",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "cx": 0.0,
+        "cy": -5.0,
+        "r": 2.0,
+        "start": 0.0,
+        "ende": 180.0
+      },
+      {
+        "typ": "vpunkt",
+        "layer": "0",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.25,
+        "x": 0.0,
+        "y": 0.0,
+        "inhalt": "L,N,PE",
+        "hoehe": 2.0,
+        "winkel": 0.0,
+        "schriftart": "Arial",
+        "einfuegepunkt": "mitte_links",
+        "tag": "VP1",
+        "prompt": "Pin 1",
+        "wert": "L,N,PE",
+        "sichtbar": true,
+        "text_dx": -0.5,
+        "text_dy": 1.5,
+        "richtungen": [
+          90
+        ],
+        "radius": 0.5
+      },
+      {
+        "typ": "maske",
+        "layer": "0",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": null,
+        "x": -3.0,
+        "y": -5.5,
+        "einpolig": true,
+        "versatz": {
+          "POLE": [
+            6.0,
+            -10.149999999999977
+          ]
+        },
+        "werte": {
+          "IND": "-X",
+          "MAN": "MAN",
+          "TYP": "TYP",
+          "PER": "PER"
+        },
+        "ausgeblendet": [],
+        "platzhalter": false,
+        "pole": "3",
+        "rolle": "haupt",
+        "spiegel": "liste",
+        "sp_dx": 0.0,
+        "sp_dy": 0.0
+      },
+      {
+        "typ": "linie",
+        "layer": "0",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": -1.0,
+        "y1": -2.5,
+        "x2": 1.0,
+        "y2": -0.5
+      }
+    ]
+  }
+}

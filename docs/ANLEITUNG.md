@@ -294,7 +294,7 @@ in Geräteliste, Stückliste, Klemmenplan, Kabel- und SPS-Liste, nicht im Netz
 Projektprüfung („Hauptgerät doppelt“) und nicht in der automatischen Nummerierung.
 Gib dem einpoligen Symbol dieselbe Kennzeichnung (IND) wie dem mehrpoligen, damit man
 sie zuordnen kann. Wichtig: Ein Gerät, das **nur** einpolig gezeichnet ist, taucht in
-keiner Liste auf – zähle es mit einem mehrpoligen Symbol oder lass das Häkchen weg.
+keiner Liste auf – außer du setzt im Menü **Projekt › Einpolige Darstellung mit auswerten** das Häkchen (auch im Dialog „Dokumentation erzeugen“). Dann werden einpolige Symbole wie normale Symbole gezählt, nummeriert, geprüft und im Netz berücksichtigt – so lassen sich auch Projekte **rein mit einpoligen Symbolen** auswerten. Zeichnest du dasselbe Gerät mehrpolig **und** einpolig, lass das Häkchen aus, sonst erscheint es doppelt. Die Einstellung gilt je Projekt und wird im Projekt gespeichert.
 Ändert sich die Kennzeichnung im mehrpoligen Symbol, ändere sie im einpoligen von Hand mit.
 
 **Polzahl:** Bei eigenen Geräten trägst du sie im selben Dialog im Feld **Polzahl** ein

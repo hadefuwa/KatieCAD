@@ -133,4 +133,19 @@ bd.text_versatz["M:POLE"] = [0.0, 5.0]; bd._cache = None
 qx, qy = pos(bd, "3")
 check(abs(qx - fx) < 1e-6 and abs(qy - fy - 5.0) < 1e-6, "Instanz-Versatz ueberschreibt Definition")
 
+# ---- project option "evaluate single-pole too" ---------------------------
+core.EINPOLIG_MIT[0] = True
+try:
+    check(not core.ist_einpolig(e) and not core.ist_einpolig(k), "Option an: nichts ist ausgenommen")
+    check(len(D.geraeteliste([(0, [e])], nr, None, False, None)) == 1, "Option an: nur einpolig wird gezaehlt")
+    check(len(L.geraete_aus_blattdaten(dd)) == 2, "Option an: Blattdatei zaehlt beide")
+    n4 = geraet(0, 0, "-K"); n4.attribute["IND"] = "-K"
+    n5 = geraet(40, 0, "-K", einpolig=True); n5.attribute["IND"] = "-K"
+    aend5, _o = NU.plan([(0, [n4, n5])])
+    check(len(aend5) == 2, f"Option an: einpolige Geraete werden nummeriert: {aend5}")
+    check(len(L.geraete([h, hi, ez], 1)) == 3, "Option an: geraete() mit einpoligem Geraet")
+finally:
+    core.EINPOLIG_MIT[0] = False
+check(core.ist_einpolig(e) and len(L.geraete_aus_blattdaten(dd)) == 1, "Option aus: wie bisher")
+
 print(f"OK ({ok} Pruefungen)")

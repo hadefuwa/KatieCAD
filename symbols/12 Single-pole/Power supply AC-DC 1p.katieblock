@@ -2,33 +2,77 @@
   "format": "katiecad-block",
   "version": 1,
   "block": {
-    "name": "Transformer allg.",
+    "name": "Block9",
     "basispunkt": [
       0.0,
       0.0
     ],
     "elemente": [
       {
-        "typ": "kreis",
+        "typ": "linie",
         "layer": "0",
         "farbe": "#c29bff",
         "linientyp": "Volllinie (schmal)",
         "eig_farbe": true,
         "staerke": 0.35,
-        "cx": 2.5,
-        "cy": -4.5,
-        "r": 4.5
+        "x1": -1.0,
+        "y1": -3.0,
+        "x2": 1.0,
+        "y2": -1.0
       },
       {
-        "typ": "kreis",
+        "typ": "polylinie",
         "layer": "0",
         "farbe": "#c29bff",
         "linientyp": "Volllinie (schmal)",
         "eig_farbe": true,
         "staerke": 0.35,
-        "cx": 2.5,
-        "cy": -10.5,
-        "r": 4.5
+        "punkte": [
+          [
+            -4.0,
+            -13.0
+          ],
+          [
+            4.0,
+            -13.0
+          ],
+          [
+            4.0,
+            -5.0
+          ],
+          [
+            -4.0,
+            -5.0
+          ]
+        ],
+        "geschlossen": true
+      },
+      {
+        "typ": "linie",
+        "layer": "0",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": -4.0,
+        "y1": -13.0,
+        "x2": 4.0,
+        "y2": -5.0
+      },
+      {
+        "typ": "text",
+        "layer": "0",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": null,
+        "x": -2.0,
+        "y": -6.0,
+        "inhalt": "~",
+        "hoehe": 3.0,
+        "winkel": 0.0,
+        "schriftart": "Arial",
+        "einfuegepunkt": "mitte_zentriert"
       },
       {
         "typ": "linie",
@@ -38,21 +82,9 @@
         "eig_farbe": true,
         "staerke": 0.35,
         "x1": 0.0,
-        "y1": 0.0,
+        "y1": -5.0,
         "x2": 0.0,
-        "y2": -0.7583426132260342
-      },
-      {
-        "typ": "linie",
-        "layer": "0",
-        "farbe": "#c29bff",
-        "linientyp": "Volllinie (schmal)",
-        "eig_farbe": true,
-        "staerke": 0.35,
-        "x1": 5.0,
-        "y1": 0.0,
-        "x2": 5.0,
-        "y2": -0.7583426132260342
+        "y2": 0.0
       },
       {
         "typ": "linie",
@@ -62,21 +94,9 @@
         "eig_farbe": true,
         "staerke": 0.35,
         "x1": 0.0,
-        "y1": -15.0,
+        "y1": -13.0,
         "x2": 0.0,
-        "y2": -14.241657386773966
-      },
-      {
-        "typ": "linie",
-        "layer": "0",
-        "farbe": "#c29bff",
-        "linientyp": "Volllinie (schmal)",
-        "eig_farbe": true,
-        "staerke": 0.35,
-        "x1": 5.0,
-        "y1": -15.0,
-        "x2": 5.0,
-        "y2": -14.241657386773966
+        "y2": -15.0
       },
       {
         "typ": "vpunkt",
@@ -87,42 +107,17 @@
         "staerke": 0.25,
         "x": 0.0,
         "y": 0.0,
-        "inhalt": "1",
+        "inhalt": "L,N",
         "hoehe": 2.0,
         "winkel": 0.0,
         "schriftart": "Arial",
         "einfuegepunkt": "mitte_links",
         "tag": "VP1",
         "prompt": "Pin 1",
-        "wert": "1",
+        "wert": "L,N",
         "sichtbar": true,
-        "text_dx": -0.5,
-        "text_dy": 2.0,
-        "richtungen": [
-          90
-        ],
-        "radius": 0.5
-      },
-      {
-        "typ": "vpunkt",
-        "layer": "0",
-        "farbe": "#c29bff",
-        "linientyp": "Volllinie (schmal)",
-        "eig_farbe": true,
-        "staerke": 0.25,
-        "x": 5.0,
-        "y": 0.0,
-        "inhalt": "2",
-        "hoehe": 2.0,
-        "winkel": 0.0,
-        "schriftart": "Arial",
-        "einfuegepunkt": "mitte_links",
-        "tag": "VP2",
-        "prompt": "Pin 2",
-        "wert": "2",
-        "sichtbar": true,
-        "text_dx": -0.5,
-        "text_dy": 2.0,
+        "text_dx": 0.0,
+        "text_dy": 0.0,
         "richtungen": [
           90
         ],
@@ -137,43 +132,20 @@
         "staerke": 0.25,
         "x": 0.0,
         "y": -15.0,
-        "inhalt": "3",
+        "inhalt": "+,-",
         "hoehe": 2.0,
         "winkel": 0.0,
         "schriftart": "Arial",
         "einfuegepunkt": "mitte_links",
-        "tag": "VP3",
-        "prompt": "Pin 3",
-        "wert": "3",
+        "tag": "VP2",
+        "prompt": "Pin 2",
+        "wert": "+,-",
         "sichtbar": true,
-        "text_dx": -0.5,
-        "text_dy": -2.0,
+        "text_dx": 0.0,
+        "text_dy": 0.0,
         "richtungen": [
           270
         ],
-        "radius": 0.5
-      },
-      {
-        "typ": "vpunkt",
-        "layer": "0",
-        "farbe": "#c29bff",
-        "linientyp": "Volllinie (schmal)",
-        "eig_farbe": true,
-        "staerke": 0.25,
-        "x": 5.0,
-        "y": -15.0,
-        "inhalt": "4",
-        "hoehe": 2.0,
-        "winkel": 0.0,
-        "schriftart": "Arial",
-        "einfuegepunkt": "mitte_links",
-        "tag": "VP4",
-        "prompt": "Pin 4",
-        "wert": "4",
-        "sichtbar": true,
-        "text_dx": -0.5,
-        "text_dy": -2.0,
-        "richtungen": null,
         "radius": 0.5
       },
       {
@@ -183,21 +155,64 @@
         "linientyp": "Volllinie (schmal)",
         "eig_farbe": true,
         "staerke": null,
-        "x": -3.0,
-        "y": -12.5,
-        "versatz": {},
+        "x": -5.0,
+        "y": -17.0,
+        "einpolig": true,
+        "versatz": {
+          "POLE": [
+            7.0,
+            0.35000000000002274
+          ]
+        },
         "werte": {
-          "IND": "-T",
+          "IND": "-U",
           "MAN": "MAN",
           "TYP": "TYP",
           "PER": "PER"
         },
         "ausgeblendet": [],
         "platzhalter": false,
+        "pole": "2",
         "rolle": "haupt",
         "spiegel": "liste",
         "sp_dx": 0.0,
         "sp_dy": 0.0
+      },
+      {
+        "typ": "linie",
+        "layer": "0",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": 0.5,
+        "y1": -11.0,
+        "x2": 3.5,
+        "y2": -11.0
+      },
+      {
+        "typ": "linie",
+        "layer": "0",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": 0.5,
+        "y1": -12.0,
+        "x2": 1.5,
+        "y2": -12.0
+      },
+      {
+        "typ": "linie",
+        "layer": "0",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": 2.5,
+        "y1": -12.0,
+        "x2": 3.5,
+        "y2": -12.0
       }
     ]
   }

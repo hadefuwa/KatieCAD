@@ -292,7 +292,7 @@ the net (connection and terminal lists), not in cross references/REF, not in the
 project check ("main device duplicate") and not in automatic numbering. Give the
 single-pole symbol the same identifier (IND) as the multi-pole one so they can be
 matched. Note: a device drawn **only** single-pole appears in no list - count it with a
-multi-pole symbol or leave the tick off. If you change the identifier of the multi-pole
+multi-pole symbol - or tick **Project > Evaluate single-pole representation too** (also in the "Create documentation" dialog). Then single-pole symbols are counted, numbered, checked and used in the net like normal symbols, so projects drawn **purely with single-pole symbols** can be evaluated as well. If you draw the same device multi-pole **and** single-pole, leave the tick off, otherwise it shows up twice. The setting is per project and saved with it. If you change the identifier of the multi-pole
 symbol, change it in the single-pole one by hand.
 
 **Number of poles:** for your own devices enter it in the same dialog in the field

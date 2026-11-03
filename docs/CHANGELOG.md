@@ -1,6 +1,7 @@
 # Änderungen
 
 ## 1.1.3
+- Neu: **Projekt › „Einpolige Darstellung mit auswerten“** (Häkchen, auch im Dialog „Dokumentation erzeugen“): Ist es gesetzt, werden einpolige Symbole wie normale gezählt (Listen, Nummerierung, Prüfung, Netz, SPS), sodass auch reine Einpol-Projekte Listen liefern. Ohne Häkchen bleibt alles wie bisher (nie mitgezählt). Die Einstellung wird je Projekt gespeichert.
 - Neu: **3D-Teile mit „Strecken“ größer/kleiner machen** (derselbe Befehl wie in 2D: Menü Bearbeiten › Strecken / `ST`): 3D-Objekte wählen, Basispunkt an der zu verschiebenden Seite klicken (z. B. Oberkante des Schranks), Zielpunkt klicken oder Abstand tippen (z. B. `200` – Richtung der Maus, `-200` kehrt um). Große Teile (Korpus, Tür, Seitenwände) werden länger/kürzer, kleine Teile an dieser Seite wandern mit, der Rest bleibt. Nicht streckbar: Körper auf Arbeitsebenen, Kugeln, vereinigte Körper, Körper mit Ausschnitten.
 - Fix: **Blattwechsel bei geöffneter 3D-Ansicht** brach ab mit `TclError: window ".!canvas" isn't packed`; die 3D-Ansicht wird jetzt vor dem Wechsel sauber geschlossen bzw. die Anzeige korrekt verankert.
 - Neu: **3D-Objekte lassen sich mit Strg+C / Strg+X / Strg+V auch auf ein anderes Blatt kopieren:** in der 3D-Ansicht hängt die Kopie nach Strg+V an der Maus (mit Objektfang) und wird mit Klick abgesetzt. Fix: Beim Einfügen in der 2D-Ansicht lag ein 3D-Körper falsch (der Bezugspunkt war 0/0)

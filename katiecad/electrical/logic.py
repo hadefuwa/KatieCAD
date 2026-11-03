@@ -13,7 +13,7 @@ from copy import deepcopy
 
 from katiecad.model.core import (Querverweis, Verbindungspunkt, BlockReferenz,
                            Verbindung, Klemme, ElektroMaske, Leitung,
-                           Koordinatenfeld, Text, Kabel, E_LINES, ist_einpolig)
+                           Koordinatenfeld, Text, Kabel, E_LINES, ist_einpolig, einpolig_ignorieren)
 from katiecad.common.i18n import tr
 
 
@@ -330,10 +330,11 @@ def geraete_aus_blattdaten(daten):
     for d in daten.get("elemente", []):
         if not isinstance(d, dict):
             continue
-        if d.get("einpolig") and d.get("typ") in ("maske", "kabel"):
+        if einpolig_ignorieren(d.get("einpolig")) and d.get("typ") in ("maske", "kabel"):
             continue
         if d.get("typ") == "block" and any(
-                isinstance(k, dict) and k.get("typ") == "maske" and k.get("einpolig")
+                isinstance(k, dict) and k.get("typ") == "maske"
+                and einpolig_ignorieren(k.get("einpolig"))
                 for k in d.get("elemente", []) or []):
             continue
         if d.get("typ") == "maske":

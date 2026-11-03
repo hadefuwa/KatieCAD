@@ -5380,11 +5380,23 @@ def kugel(cx, cy, cz, r, **kw):
     return Koerper3D("kugel", [], 0.0, 0.0, kugel=(cx, cy, cz, r), bez="Kugel", **kw)
 
 
+EINPOLIG_MIT = [False]      # project option "evaluate single-pole representation too"
+
+
+def einpolig_ignorieren(flag):
+    """True if an element carrying the single-pole flag `flag` must be left out of the
+    evaluations (flag set and the project option 'evaluate single-pole too' off)."""
+    return bool(flag) and not EINPOLIG_MIT[0]
+
+
 def ist_einpolig(el):
     """True if `el` (device mask, terminal, cable or block with an electrical
     mask) is marked as single-pole second representation. Such elements are
     ignored by all evaluations (device/parts/terminal lists, net, checks,
-    cross references) so that nothing is counted twice."""
+    cross references) so that nothing is counted twice - unless the project
+    option 'evaluate single-pole too' (EINPOLIG_MIT) is on."""
+    if EINPOLIG_MIT[0]:
+        return False
     if isinstance(el, BlockReferenz):
         m = el.geraet_maske()
         return bool(m is not None and getattr(m, "einpolig", False))

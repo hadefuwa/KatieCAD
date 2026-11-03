@@ -15,6 +15,12 @@ sheet files (other sheets).
 
 import re
 
+
+def _ign(flag):
+    """single-pole copy left out? (project option may include it)"""
+    from katiecad.model.core import einpolig_ignorieren
+    return einpolig_ignorieren(flag)
+
 _ZAHL_AM_ENDE = re.compile(r"^(.*?)(\d+)$")
 
 
@@ -30,7 +36,7 @@ def geraete_felder(el):
     """-> (holder, key, rolle, x, y) of the IND field of a device or None."""
     t = _typ(el)
     if t == "maske":
-        if _get(el, "einpolig", False):
+        if _ign(_get(el, "einpolig", False)):
             return None                  # single-pole copy keeps the identifier
         werte = _get(el, "werte")
         if isinstance(werte, dict) and "IND" in werte:
@@ -42,12 +48,12 @@ def geraete_felder(el):
             if isinstance(el, dict):
                 maske = next((k for k in el.get("elemente", []) or []
                               if isinstance(k, dict) and k.get("typ") == "maske"), None)
-                if maske and maske.get("einpolig"):
+                if maske and _ign(maske.get("einpolig")):
                     return None
                 rolle = maske.get("rolle", "haupt") if maske else None
             else:
                 m = el.geraet_maske() if hasattr(el, "geraet_maske") else None
-                if m is not None and getattr(m, "einpolig", False):
+                if m is not None and _ign(getattr(m, "einpolig", False)):
                     return None
                 rolle = m.rolle if m is not None else None
             if rolle is not None:

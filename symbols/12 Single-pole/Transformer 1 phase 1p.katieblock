@@ -1,0 +1,228 @@
+{
+  "format": "katiecad-block",
+  "version": 1,
+  "block": {
+    "name": "Trafo 1",
+    "basispunkt": [
+      0.0,
+      0.0
+    ],
+    "elemente": [
+      {
+        "typ": "maske",
+        "layer": "0",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": null,
+        "x": -5.5,
+        "y": -14.771565495207653,
+        "einpolig": true,
+        "versatz": {
+          "POLE": [
+            8.5,
+            -0.8784345047923381
+          ]
+        },
+        "werte": {
+          "IND": "-T",
+          "MAN": "MAN",
+          "TYP": "TYP",
+          "PER": "PER"
+        },
+        "ausgeblendet": [],
+        "platzhalter": false,
+        "pole": "2",
+        "rolle": "haupt",
+        "spiegel": "liste",
+        "sp_dx": 0.0,
+        "sp_dy": 0.0
+      },
+      {
+        "typ": "kreis",
+        "layer": "0",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "cx": 0.0,
+        "cy": -7.271565495207653,
+        "r": 3.5355339059327378
+      },
+      {
+        "typ": "kreis",
+        "layer": "0",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "cx": 0.0,
+        "cy": -13.271565495207653,
+        "r": 3.5355339059327378
+      },
+      {
+        "typ": "linie",
+        "layer": "0",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": 0.0,
+        "y1": 0.0,
+        "x2": 0.0,
+        "y2": -3.7360315892749156
+      },
+      {
+        "typ": "linie",
+        "layer": "0",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": 0.0,
+        "y1": -20.0,
+        "x2": 0.0,
+        "y2": -17.0
+      },
+      {
+        "typ": "vpunkt",
+        "layer": "0",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.25,
+        "x": 0.0,
+        "y": 0.0,
+        "inhalt": "1,2",
+        "hoehe": 2.0,
+        "winkel": 0.0,
+        "schriftart": "Arial",
+        "einfuegepunkt": "mitte_links",
+        "tag": "VP1",
+        "prompt": "Pin 1",
+        "wert": "1,2",
+        "sichtbar": true,
+        "text_dx": -0.5,
+        "text_dy": 2.0,
+        "richtungen": [
+          90
+        ],
+        "radius": 0.5
+      },
+      {
+        "typ": "vpunkt",
+        "layer": "0",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.25,
+        "x": 0.0,
+        "y": -20.0,
+        "inhalt": "3,4",
+        "hoehe": 2.0,
+        "winkel": 0.0,
+        "schriftart": "Arial",
+        "einfuegepunkt": "mitte_links",
+        "tag": "VP2",
+        "prompt": "Pin 2",
+        "wert": "3,4",
+        "sichtbar": true,
+        "text_dx": -0.5,
+        "text_dy": -2.0,
+        "richtungen": [
+          270
+        ],
+        "radius": 0.5
+      },
+      {
+        "typ": "linie",
+        "layer": "0",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": -5.5,
+        "y1": -14.771565495207653,
+        "x2": 4.921725239616592,
+        "y2": -5.228434504792347
+      },
+      {
+        "typ": "linie",
+        "layer": "0",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": 6.5,
+        "y1": -3.7715654952076534,
+        "x2": 4.5,
+        "y2": -4.771565495207653
+      },
+      {
+        "typ": "linie",
+        "layer": "0",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": 4.5,
+        "y1": -4.771565495207653,
+        "x2": 5.343450479233184,
+        "y2": -5.68530351437704
+      },
+      {
+        "typ": "schraffur",
+        "layer": "0",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": null,
+        "punkte": [
+          [
+            5.343450479233184,
+            -5.68530351437704
+          ],
+          [
+            6.5,
+            -3.7715654952076534
+          ],
+          [
+            4.5,
+            -4.771565495207653
+          ],
+          [
+            4.921725239616592,
+            -5.228434504792347
+          ]
+        ],
+        "muster": "solid",
+        "winkel": 45.0,
+        "abstand": 5.0
+      },
+      {
+        "typ": "linie",
+        "layer": "0",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": 6.5,
+        "y1": -3.7715654952076534,
+        "x2": 5.343450479233184,
+        "y2": -5.68530351437704
+      },
+      {
+        "typ": "linie",
+        "layer": "0",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": -1.0,
+        "y1": -2.868015794637458,
+        "x2": 1.0,
+        "y2": -0.8680157946374578
+      }
+    ]
+  }
+}

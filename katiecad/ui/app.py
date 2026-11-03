@@ -62,6 +62,7 @@ from katiecad.electrical import nummerierung as NUM
 from katiecad.model.geom2d import spline_punkte
 from katiecad.ui.sidebar import Seitenleiste
 from katiecad.ui.widgets import FlatButton, farb_swatch, Tooltip
+import katiecad.model.core as core
 from katiecad.model.core import (
     FARBEN, FARBSCHEMEN, FARBSCHEMA, farbschema_anwenden, EINHEITEN, ZEICHNUNGSFORMATE, MASSSTAEBE, LINIENTYPEN,
     schrift_fett, schrift_name, schrift_setzen, schriftarten_aktualisieren, SCHRIFTEN,
@@ -1184,6 +1185,10 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         m_projekt.add_command(label=tr("menu.datei.export_projekt_dxf"),
                               command=self.projekt_dxf_exportieren)
         m_projekt.add_separator()
+        self._v_einpolig_mit = tk.BooleanVar(value=False)
+        m_projekt.add_checkbutton(label=tr("menu.projekt.einpolig_mit"),
+                                  variable=self._v_einpolig_mit,
+                                  command=self.einpolig_auswerten_umschalten)
         m_projekt.add_command(label=tr("menu.projekt.nummerieren"),
                               command=self.geraete_nummerieren)
         m_projekt.add_command(label=tr("menu.projekt.bauteile"),
@@ -9124,6 +9129,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
     def _projekt_fuer_einzeldatei_schliessen(self):
         if self.projekt is not None:
             self.projekt = None
+            self._einpolig_sync()
             self._undo_pro_blatt = {}
             self.seitenleiste.aktualisieren()
             self._update_titel()
@@ -9323,6 +9329,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                                  parent=self.root)
             return
         self.projekt = p
+        self._einpolig_sync()
         self._undo_pro_blatt = {}
         self._blatt_laden(0)
         p.speichern()
@@ -9365,6 +9372,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                                  parent=self.root)
             return False
         self.projekt = p
+        self._einpolig_sync()
         self._undo_pro_blatt = {}
         self._blatt_laden(p.aktiv)
         self._letzten_projektordner_merken(p)
@@ -9390,6 +9398,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
     def _projekt_zuruecksetzen(self):
         """Leave the project without asking; the work area becomes empty."""
         self.projekt = None
+        self._einpolig_sync()
         self._undo_pro_blatt = {}
         self._zeichnung_anwenden(
             self._leere_zeichnung_daten(einstellungen_uebernehmen=False),
@@ -10881,6 +10890,34 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             indizes.append(i)
         return infos, indizes
 
+    def _einpolig_sync(self):
+        """Takes the project option 'evaluate single-pole representation too' over into
+        the evaluation switch (off without project)."""
+        an = bool(self.projekt is not None and self.projekt.doku.get("einpolig_auswerten"))
+        core.EINPOLIG_MIT[0] = an
+        v = getattr(self, "_v_einpolig_mit", None)
+        if v is not None:
+            v.set(an)
+
+    def einpolig_auswerten_umschalten(self):
+        """Menu check mark Project > 'Evaluate single-pole representation too'."""
+        p = self.projekt
+        if p is None:
+            self.status.set(tr("msg.projekt.kein_projekt"))
+            self._v_einpolig_mit.set(False)
+            return
+        p.doku = {**p.doku, "einpolig_auswerten": bool(self._v_einpolig_mit.get())}
+        self._einpolig_sync()
+        try:
+            p.speichern()
+        except Exception as e:
+            messagebox.showerror(tr("msg.projekt.titel"),
+                                 tr("msg.projekt.fehler", fehler=e), parent=self.root)
+        self.redraw()
+        self._mark_dirty()
+        self.status.set(tr("msg.einpolig.mit_an" if core.EINPOLIG_MIT[0]
+                           else "msg.einpolig.mit_aus"))
+
     def geraete_nummerieren(self):
         """Gives devices with an incomplete designation ('-K', 'K?') the next
         free number (-K1, -K2 ...); numbers continue after the highest one
@@ -11000,7 +11037,9 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         p.daten = {**p.daten, **res["daten"]}      # keeps the revision table
         p.doku = {"berichte": res["berichte"], "vorlage": res["vorlage"],
                   "klemmen_geraete": res["klemmen_geraete"],
+                  "einpolig_auswerten": bool(res.get("einpolig_auswerten")),
                   "format": res.get("format", "a4")}
+        self._einpolig_sync()
         vorlage = None
         try:
             if res["vorlage"]:

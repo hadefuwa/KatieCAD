@@ -336,6 +336,7 @@ with tempfile.TemporaryDirectory() as tmp:
     fake.root = None
     fake.status = SimpleNamespace(set=lambda t: setattr(fake, "meldung", t))
     fake._blatt_sichern = lambda: True
+    fake._einpolig_sync = lambda: A.CadApp._einpolig_sync(fake)
     fake._blatt_druckkontext = lambda i: SimpleNamespace(elemente=blaetter_el[p.blaetter[i].name], layouts=[core.Layout("L", "A4 (297x210)")], layers={}, bericht=None)
     fake._dict_zu_element = A.CadApp.__new__(A.CadApp)._dict_zu_element
     fake._leere_zeichnung_daten = lambda einstellungen_uebernehmen=True: {"einheit": "mm", "layers": [], "block_definitionen": []}
