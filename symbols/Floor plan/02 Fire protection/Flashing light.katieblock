@@ -1,0 +1,153 @@
+{
+  "format": "katiecad-block",
+  "version": 1,
+  "block": {
+    "name": "Blinkleuchte",
+    "basispunkt": [
+      0.0,
+      0.0
+    ],
+    "elemente": [
+      {
+        "typ": "linie",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": 0.0,
+        "y1": 95.9375,
+        "x2": 0.0,
+        "y2": 77.8125
+      },
+      {
+        "typ": "linie",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": -45.7409699080049,
+        "y1": 76.99096990800444,
+        "x2": -32.92465949899861,
+        "y2": 64.17465949899815
+      },
+      {
+        "typ": "linie",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": 45.7409699080049,
+        "y1": 76.99096990800444,
+        "x2": 32.92465949899861,
+        "y2": 64.17465949899815
+      },
+      {
+        "typ": "linie",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": 64.6875,
+        "y1": 31.25,
+        "x2": 46.5625,
+        "y2": 31.25
+      },
+      {
+        "typ": "linie",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": -64.6875,
+        "y1": 31.25,
+        "x2": -46.5625,
+        "y2": 31.25
+      },
+      {
+        "typ": "linie",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": -37.5,
+        "y1": -68.75,
+        "x2": 37.5,
+        "y2": -68.75
+      },
+      {
+        "typ": "linie",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": -37.5,
+        "y1": -68.75,
+        "x2": -37.5,
+        "y2": 31.25
+      },
+      {
+        "typ": "linie",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": 37.5,
+        "y1": -68.75,
+        "x2": 37.5,
+        "y2": 31.25
+      },
+      {
+        "typ": "bogen",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "cx": 0.0,
+        "cy": 31.25,
+        "r": 37.5,
+        "start": 0.0,
+        "ende": 180.0
+      },
+      {
+        "typ": "rechteck",
+        "layer": "FP-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": null,
+        "x1": 105.0,
+        "y1": 105.0,
+        "x2": -105.0,
+        "y2": -105.0
+      },
+      {
+        "typ": "attdef",
+        "layer": "Schrift",
+        "farbe": "#d8d0e8",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": null,
+        "x": 115.0,
+        "y": 0.0,
+        "inhalt": "<DEVICE>",
+        "hoehe": 100.0,
+        "winkel": 0.0,
+        "schriftart": "Arial",
+        "einfuegepunkt": "mitte_links",
+        "tag": "DEVICE",
+        "prompt": "Device",
+        "wert": "-D",
+        "sichtbar": true
+      }
+    ]
+  }
+}

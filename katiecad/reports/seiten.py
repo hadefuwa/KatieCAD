@@ -21,7 +21,7 @@ import os
 from katiecad.model.core import (Text, Linie, Rechteck, FARBEN, ZEICHEN_FARBE,
                                  ZEICHNUNGSFORMATE)
 from katiecad.model import titleblock as TB
-from katiecad.common.i18n import tr
+from katiecad.common.i18n import tr, datum_text
 from katiecad.reports import daten as D
 from katiecad.reports import daten_listen as DL
 from katiecad.reports import daten_sps as DS
@@ -225,7 +225,7 @@ def inhaltsflaeche(vorlage, fmt=FORMAT):
 
 def kurzes_datum(heute, sprache):
     """Short date for narrow title block fields (15 mm): 23.10.26 / 26-10-23."""
-    return heute.strftime("%d.%m.%y") if sprache == "de" else heute.strftime("%y-%m-%d")
+    return datum_text(heute, sprache, kurz=True)
 
 
 def titel_werte(daten, titel1, projektname, heute, sprache):
@@ -268,8 +268,7 @@ def deckblatt_inhalt(daten, projektname, flaeche, heute, sprache, skala=1.0):
                    "Arial", einfuegepunkt="mitte_zentriert", **TEXT))
     ly = y2 - 0.45 * hoehe
     el.append(Linie(cx - 70 * f, ly, cx + 70 * f, ly, staerke=0.5, **LINIE))
-    datum = daten.get("datum") or (heute.strftime("%d.%m.%Y") if sprache == "de"
-                                   else heute.strftime("%Y-%m-%d"))
+    datum = daten.get("datum") or datum_text(heute, sprache)
     zeilen = [(tr("rep.deck.kunde"), daten.get("kunde", "")),
               (tr("rep.deck.auftrag"), daten.get("auftrag", "")),
               (tr("rep.deck.zeichnungsnummer"), daten.get("zeichnungsnummer", "")),
@@ -493,14 +492,23 @@ def berichte_erzeugen(blaetter, projektname, daten, aktiv, vorlage, sprache,
     return vorne, hinten
 
 
+def _first_tag(attribute, *namen):
+    for n in namen:
+        v = str(attribute.get(n, "")).strip()
+        if v:
+            return v
+    return ""
+
+
 def beschreibung_aus_layouts(layouts):
-    """Title from the title block (TITEL1..3 or TITLE) of the first layout with a
+    """Title from the title block (TITLE1..3 / TITEL1..3 or TITLE) of the first layout with a
     title block, e.g. 'Main circuit - drive'."""
     for lay in layouts:
         for e in lay.elemente:
             if TB.is_title_block(e):
-                teile = [str(e.attribute.get(t, "")).strip()
-                         for t in ("TITEL1", "TITEL2", "TITEL3", "TITLE")]
+                teile = [_first_tag(e.attribute, *t) for t in
+                         (("TITLE1", "TITEL1"), ("TITLE2", "TITEL2"),
+                          ("TITLE3", "TITEL3"), ("TITLE", "TITEL"))]
                 teile = [t for t in teile if t]
                 if teile:
                     return " - ".join(teile[:2])

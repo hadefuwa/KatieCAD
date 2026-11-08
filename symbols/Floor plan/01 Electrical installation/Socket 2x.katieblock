@@ -1,0 +1,380 @@
+{
+  "format": "katiecad-block",
+  "version": 1,
+  "block": {
+    "name": "Steckdose 2fach",
+    "basispunkt": [
+      0.0,
+      0.0
+    ],
+    "elemente": [
+      {
+        "typ": "bogen",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": false,
+        "staerke": 0.35,
+        "cx": -94.99999999997817,
+        "cy": -274.51557910667407,
+        "r": 100.10190035492064,
+        "start": 2.5854798995169337,
+        "ende": 177.41452010048147
+      },
+      {
+        "typ": "linie",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": false,
+        "staerke": 0.35,
+        "x1": 0.0,
+        "y1": -175.0,
+        "x2": 0.0,
+        "y2": 0.0
+      },
+      {
+        "typ": "bogen",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": false,
+        "staerke": 0.35,
+        "cx": 105.0,
+        "cy": -274.5155791066768,
+        "r": 100.10190035492064,
+        "start": 2.5854798995169337,
+        "ende": 177.41452010048147
+      },
+      {
+        "typ": "linie",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": false,
+        "staerke": 0.35,
+        "x1": -99.99999999998909,
+        "y1": -174.99999999999864,
+        "x2": 99.99999999998909,
+        "y2": -175.00000000000136
+      },
+      {
+        "typ": "attdef",
+        "layer": "Schrift",
+        "farbe": "#d8d0e8",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": null,
+        "x": 25.0,
+        "y": -77.5,
+        "inhalt": "<DEV>",
+        "hoehe": 100.0,
+        "winkel": 0.0,
+        "schriftart": "Arial",
+        "einfuegepunkt": "mitte_links",
+        "tag": "DEV",
+        "prompt": "DEVICE",
+        "wert": "-X",
+        "sichtbar": true
+      }
+    ],
+    "varianten": [
+      {
+        "name": "A",
+        "elemente": [
+          {
+            "typ": "bogen",
+            "layer": "F-Pieces",
+            "farbe": "#c29bff",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": false,
+            "staerke": 0.35,
+            "cx": -94.99999999997817,
+            "cy": -274.51557910667407,
+            "r": 100.10190035492064,
+            "start": 2.5854798995169337,
+            "ende": 177.41452010048147
+          },
+          {
+            "typ": "linie",
+            "layer": "F-Pieces",
+            "farbe": "#c29bff",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": false,
+            "staerke": 0.35,
+            "x1": 0.0,
+            "y1": -175.0,
+            "x2": 0.0,
+            "y2": 0.0
+          },
+          {
+            "typ": "bogen",
+            "layer": "F-Pieces",
+            "farbe": "#c29bff",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": false,
+            "staerke": 0.35,
+            "cx": 105.0,
+            "cy": -274.5155791066768,
+            "r": 100.10190035492064,
+            "start": 2.5854798995169337,
+            "ende": 177.41452010048147
+          },
+          {
+            "typ": "linie",
+            "layer": "F-Pieces",
+            "farbe": "#c29bff",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": false,
+            "staerke": 0.35,
+            "x1": -99.99999999998909,
+            "y1": -174.99999999999864,
+            "x2": 99.99999999998909,
+            "y2": -175.00000000000136
+          },
+          {
+            "typ": "attdef",
+            "layer": "Schrift",
+            "farbe": "#d8d0e8",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": true,
+            "staerke": null,
+            "x": 25.0,
+            "y": -77.5,
+            "inhalt": "<DEV>",
+            "hoehe": 100.0,
+            "winkel": 0.0,
+            "schriftart": "Arial",
+            "einfuegepunkt": "mitte_links",
+            "tag": "DEV",
+            "prompt": "DEVICE",
+            "wert": "-X",
+            "sichtbar": true
+          }
+        ]
+      },
+      {
+        "name": "B",
+        "elemente": [
+          {
+            "typ": "bogen",
+            "layer": "F-Pieces",
+            "farbe": "#c29bff",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": false,
+            "staerke": 0.35,
+            "cx": 274.51557910667384,
+            "cy": -94.99999999997817,
+            "r": 100.10190035492064,
+            "start": 92.58547989951694,
+            "ende": 267.41452010048147
+          },
+          {
+            "typ": "linie",
+            "layer": "F-Pieces",
+            "farbe": "#c29bff",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": false,
+            "staerke": 0.35,
+            "x1": 174.99999999999977,
+            "y1": 0.0,
+            "x2": 0.0,
+            "y2": 0.0
+          },
+          {
+            "typ": "bogen",
+            "layer": "F-Pieces",
+            "farbe": "#c29bff",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": false,
+            "staerke": 0.35,
+            "cx": 274.51557910667657,
+            "cy": 105.0,
+            "r": 100.10190035492064,
+            "start": 92.58547989951694,
+            "ende": 267.41452010048147
+          },
+          {
+            "typ": "linie",
+            "layer": "F-Pieces",
+            "farbe": "#c29bff",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": false,
+            "staerke": 0.35,
+            "x1": 174.9999999999984,
+            "y1": -99.99999999998909,
+            "x2": 175.00000000000114,
+            "y2": 99.99999999998909
+          },
+          {
+            "typ": "attdef",
+            "layer": "Schrift",
+            "farbe": "#d8d0e8",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": true,
+            "staerke": null,
+            "x": 87.5,
+            "y": 20.0,
+            "inhalt": "<DEV>",
+            "hoehe": 100.0,
+            "winkel": 90.0,
+            "schriftart": "Arial",
+            "einfuegepunkt": "mitte_links",
+            "tag": "DEV",
+            "prompt": "DEVICE",
+            "wert": "-X",
+            "sichtbar": true
+          }
+        ]
+      },
+      {
+        "name": "C",
+        "elemente": [
+          {
+            "typ": "bogen",
+            "layer": "F-Pieces",
+            "farbe": "#c29bff",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": false,
+            "staerke": 0.35,
+            "cx": 94.99999999997817,
+            "cy": 274.5155791066736,
+            "r": 100.10190035492064,
+            "start": 182.58547989951694,
+            "ende": 357.41452010048147
+          },
+          {
+            "typ": "linie",
+            "layer": "F-Pieces",
+            "farbe": "#c29bff",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": false,
+            "staerke": 0.35,
+            "x1": 0.0,
+            "y1": 175.0,
+            "x2": 0.0,
+            "y2": 0.0
+          },
+          {
+            "typ": "bogen",
+            "layer": "F-Pieces",
+            "farbe": "#c29bff",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": false,
+            "staerke": 0.35,
+            "cx": -105.0,
+            "cy": 274.51557910667634,
+            "r": 100.10190035492064,
+            "start": 182.58547989951694,
+            "ende": 357.41452010048147
+          },
+          {
+            "typ": "linie",
+            "layer": "F-Pieces",
+            "farbe": "#c29bff",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": false,
+            "staerke": 0.35,
+            "x1": 99.99999999998909,
+            "y1": 174.99999999999818,
+            "x2": -99.99999999998909,
+            "y2": 175.0000000000009
+          },
+          {
+            "typ": "attdef",
+            "layer": "Schrift",
+            "farbe": "#d8d0e8",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": true,
+            "staerke": null,
+            "x": 25.0,
+            "y": 97.5,
+            "inhalt": "<DEV>",
+            "hoehe": 100.0,
+            "winkel": 0.0,
+            "schriftart": "Arial",
+            "einfuegepunkt": "mitte_links",
+            "tag": "DEV",
+            "prompt": "DEVICE",
+            "wert": "-X",
+            "sichtbar": true
+          }
+        ]
+      },
+      {
+        "name": "D",
+        "elemente": [
+          {
+            "typ": "bogen",
+            "layer": "F-Pieces",
+            "farbe": "#c29bff",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": false,
+            "staerke": 0.35,
+            "cx": -274.5155791066736,
+            "cy": 94.99999999997817,
+            "r": 100.10190035492064,
+            "start": 272.58547989951694,
+            "ende": 87.41452010048147
+          },
+          {
+            "typ": "linie",
+            "layer": "F-Pieces",
+            "farbe": "#c29bff",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": false,
+            "staerke": 0.35,
+            "x1": -175.0,
+            "y1": 0.0,
+            "x2": 0.0,
+            "y2": 0.0
+          },
+          {
+            "typ": "bogen",
+            "layer": "F-Pieces",
+            "farbe": "#c29bff",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": false,
+            "staerke": 0.35,
+            "cx": -274.51557910667634,
+            "cy": -105.0,
+            "r": 100.10190035492064,
+            "start": 272.58547989951694,
+            "ende": 87.41452010048147
+          },
+          {
+            "typ": "linie",
+            "layer": "F-Pieces",
+            "farbe": "#c29bff",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": false,
+            "staerke": 0.35,
+            "x1": -174.99999999999818,
+            "y1": 99.99999999998909,
+            "x2": -175.0000000000009,
+            "y2": -99.99999999998909
+          },
+          {
+            "typ": "attdef",
+            "layer": "Schrift",
+            "farbe": "#d8d0e8",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": true,
+            "staerke": null,
+            "x": -87.5,
+            "y": 20.0,
+            "inhalt": "<DEV>",
+            "hoehe": 100.0,
+            "winkel": 90.0,
+            "schriftart": "Arial",
+            "einfuegepunkt": "mitte_links",
+            "tag": "DEV",
+            "prompt": "DEVICE",
+            "wert": "-X",
+            "sichtbar": true
+          }
+        ]
+      }
+    ]
+  }
+}

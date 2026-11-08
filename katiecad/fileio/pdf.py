@@ -251,7 +251,6 @@ def pdf_seite_erzeugen(app, quelle, farbig, vp_rahmen, layout_index=None,
     """Creates a PdfSeite for model or layout.
     app must provide: elemente, layers, layouts, aktives_layout,
                      layout_format, _einh_faktor(), dezimalkomma.get()."""
-    de = SPRACHE["aktuell"] == "de"
     einh = app._einh_faktor()
     komma = app.dezimalkomma.get()
     wand_verknuepfen(app.elemente)
@@ -278,8 +277,7 @@ def pdf_seite_erzeugen(app, quelle, farbig, vp_rahmen, layout_index=None,
     sichtbar = [e for e in app.elemente
                 if not (app.layers.get(e.layer) and not app.layers[e.layer].sichtbar)]
     if not sichtbar:
-        raise ValueError(("Das Modell ist leer." if de
-                          else "The model is empty."))
+        raise ValueError((tr("txt.0248")))
     bbs = [e.bbox() for e in sichtbar]
     x1, y1 = min(b_[0] for b_ in bbs), min(b_[1] for b_ in bbs)
     x2, y2 = max(b_[2] for b_ in bbs), max(b_[3] for b_ in bbs)
@@ -298,7 +296,7 @@ def pdf_seite_erzeugen(app, quelle, farbig, vp_rahmen, layout_index=None,
     for el in sichtbar:
         _pdf_element(seite, el, tf, z, farbig, app.layers, einh, komma)
     seite.text(rand, 4.0,
-               ("Maßstab " if de else "Scale ") + massstab_text(z),
+               (tr("txt.0249")) + massstab_text(z),
                3.0, 0.0, "#000000")
     return seite
 
@@ -330,7 +328,6 @@ def pdf_mehrseitig_erzeugen(kontexte, quelle, farbig, vp_rahmen):
 
 
 def pdf_senden(pfad, drucken):
-    de = SPRACHE["aktuell"] == "de"
     try:
         if sys.platform.startswith("win"):
             os.startfile(pfad, "print" if drucken else "open")
@@ -342,8 +339,5 @@ def pdf_senden(pfad, drucken):
                            check=True)
     except Exception as ex:
         messagebox.showwarning(
-            ("Drucken" if de else "Print"),
-            (f"Die Datei konnte nicht automatisch geöffnet/gedruckt werden "
-             f"({ex}).\nDie PDF liegt hier:\n{pfad}" if de else
-             f"The file could not be opened/printed automatically ({ex}).\n"
-             f"The PDF is here:\n{pfad}"))
+            (tr("txt.0250")),
+            (tr("txt.0251", p0=ex, p1=pfad)))

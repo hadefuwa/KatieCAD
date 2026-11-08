@@ -209,4 +209,5 @@ for t, erw in (("AENDERUNG_NAME1", (1, "name")), ("AendDatum2", (2, "datum")), (
                ("DATUM_AEND4", (4, "datum")), ("Stand_Index1", (1, "stand")), ("Bearb2", (2, "name"))):
     check(TB.parse_rev_tag(t) == erw, "Tag %s -> %s" % (t, TB.parse_rev_tag(t)))
 check(TB.parse_rev_tag("NAME") is None and TB.parse_rev_tag("TEXT3") is None, "keine falschen Treffer")
+check(inf["TITLE1"] == "Stadtwerke" and inf["TITLE3"] == "Antriebe", "Englische Titel-Tags TITLE1..3")
 print(ok, "Checks bestanden")

@@ -1,7 +1,7 @@
 ; Inno Setup script - Windows installer for KatieCAD
-; Build:  iscc /DAppVersion=1.1.3 installer\KatieCAD.iss
+; Build:  iscc /DAppVersion=1.1.5 installer\KatieCAD.iss
 #ifndef AppVersion
-  #define AppVersion "1.1.3"
+  #define AppVersion "1.1.5"
 #endif
 
 [Setup]
@@ -32,9 +32,11 @@ LicenseFile=..\LICENSE
 [Languages]
 Name: "german"; MessagesFile: "compiler:Languages\German.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"
+Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 
 [Messages]
 german.WelcomeLabel2=Dieser Assistent installiert [name/ver] auf Ihrem Computer.%n%nKatieCAD ist ein 2D-CAD-Programm mit Elektro-CAD, Schaltschrank-Planung und einfachem 3D – kostenlos und quelloffen (MIT-Lizenz).%n%nSchließen Sie vor dem Fortfahren bitte alle anderen Anwendungen.
+spanish.WelcomeLabel2=Este asistente instalará [name/ver] en su equipo.%n%nKatieCAD es un programa de CAD 2D con CAD eléctrico, planificación de armarios y 3D sencillo: gratuito y de código abierto (licencia MIT).%n%nAntes de continuar, cierre las demás aplicaciones.
 english.WelcomeLabel2=This wizard installs [name/ver] on your computer.%n%nKatieCAD is a 2D CAD program with electrical CAD, cabinet planning and simple 3D - free and open source (MIT license).%n%nPlease close all other applications before you continue.
 
 [Tasks]

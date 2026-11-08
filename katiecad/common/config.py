@@ -18,7 +18,7 @@ import sys
 
 KONFIG_DATEI = "config.json"
 STANDARD_SPRACHE = "en"                 # First start: English
-_UNTERSTUETZTE_SPRACHEN = ("de", "en")
+_UNTERSTUETZTE_SPRACHEN = ("de", "en", "es")
 
 
 def _konfig_verzeichnis():

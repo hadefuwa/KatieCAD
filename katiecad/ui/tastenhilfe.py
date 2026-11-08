@@ -12,6 +12,7 @@ from tkinter import ttk
 
 from katiecad.common.i18n import tr, SPRACHE
 from katiecad.model.core import BEFEHLE
+from katiecad.ui import tastenhilfe_es as ES
 
 # --- Keys: (key, German, English) ------------------------------------------
 TASTEN = [
@@ -151,8 +152,12 @@ BESCHREIBUNG = {
 
 
 def _taste(text, de):
-    """Key names as on the keyboard of the UI language."""
-    if de:
+    """Key names as on the keyboard of the UI language (`de`: True/"de", "en" or "es")."""
+    if de is True or de == "de":
+        return text
+    if de == "es":
+        for a, b in ES.TASTEN_NAMEN:
+            text = text.replace(a, b)
         return text
     for a, b in (("Strg", "Ctrl"), ("Umschalt", "Shift"), ("Entf", "Del"),
                  ("Eingabe (leer)", "Enter (empty)"), ("Tab (Eingabezeile)", "Tab (input line)"),
@@ -166,7 +171,8 @@ def _taste(text, de):
 
 
 def _de():
-    return SPRACHE["aktuell"] == "de"
+    """Language code of the UI (the parameter `de` of the functions below holds it)."""
+    return SPRACHE["aktuell"]
 
 
 def befehle_zeilen(de=None):
@@ -177,7 +183,10 @@ def befehle_zeilen(de=None):
         gruppen.setdefault(funktion, []).append(name)
     zeilen = []
     for funktion, namen in gruppen.items():
-        text = BESCHREIBUNG.get(funktion, (funktion, funktion))[0 if de else 1]
+        if de == "es" and funktion in ES.BESCHREIBUNG:
+            text = ES.BESCHREIBUNG[funktion]
+        else:
+            text = BESCHREIBUNG.get(funktion, (funktion, funktion))[0 if de in (True, "de") else 1]
         namen = sorted(set(namen), key=lambda n: (len(n), n))
         zeilen.append((" / ".join(namen), text))
     zeilen.sort(key=lambda z: z[1].lower())
@@ -187,10 +196,13 @@ def befehle_zeilen(de=None):
 def abschnitte(de=None):
     """[(title, [(key, text)])] for the window."""
     de = _de() if de is None else de
-    i = 1 if de else 2
+    i = 1 if de in (True, "de") else 2
+
+    def text(t):
+        return ES.TASTEN.get(t[0], t[2]) if de == "es" else t[i]
     return [
-        (tr("hilfe.tasten.tastatur"), [(_taste(t[0], de), t[i]) for t in TASTEN]),
-        (tr("hilfe.tasten.maus"), [(_taste(t[0], de), t[i]) for t in MAUS]),
+        (tr("hilfe.tasten.tastatur"), [(_taste(t[0], de), text(t)) for t in TASTEN]),
+        (tr("hilfe.tasten.maus"), [(_taste(t[0], de), text(t)) for t in MAUS]),
         (tr("hilfe.tasten.befehle"), befehle_zeilen(de)),
     ]
 

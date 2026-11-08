@@ -253,4 +253,64 @@ for k in ("dlg.wand.modell", "dlg.wand.modell.einfach", "dlg.wand.modell.doppel"
           "dlg.wand.modell.rolltor", "dlg.wand.anteil", "dlg.wand.spiegeln_gross", "dlg.wand.titel_vorgabe_tuer",
           "dlg.wand.titel_vorgabe_fenster"):
     check(k in I.TEXTE["de"] and k in I.TEXTE["en"], k)
+# Anschluss einer Wand an die Ecke eines bestehenden Winkels (Wand laeuft in der Verlaengerung weiter,
+# Luecke ca. eine halbe Wandstaerke): T-Anschluss statt Verschmelzen ueber den Winkel zurueck
+_K = 240 / 107.0
+_S = lambda p: (p[0] * _K, -p[1] * _K)
+for _lw in ([(364.5, -50), (364.5, 111.5), (900, 111.5)], [(900, 111.5), (364.5, 111.5), (364.5, -50)]):
+    for _un in ([(364.5, 216), (364.5, 500)], [(364.5, 500), (364.5, 216)]):
+        _a = core.Wand([_S(p) for p in _lw], dicke=240)
+        _b = core.Wand([_S(p) for p in _un], dicke=240)
+        for _x, _y in ((_a, _b), (_b, _a)):
+            _r = core.wand_verbinden(_x, _y)
+            check(isinstance(_r, dict) and _r.get("modus") == "t" and _r["wand"] is _b
+                  and abs(_r["punkt"][0] - 364.5 * _K) < 1e-6 and abs(_r["punkt"][1] + 111.5 * _K) < 1e-6,
+                  "Anschluss an Winkelecke: T-Anschluss auf die Ecke")
+# nach dem Anschluss: keine Linie der Winkelwand quer durch die anschliessende Wand
+_a = core.Wand([_S(p) for p in [(364.5, -50), (364.5, 111.5), (900, 111.5)]], dicke=240)
+_b = core.Wand([_S(p) for p in [(364.5, 216), (364.5, 500)]], dicke=240)
+_r = core.wand_verbinden(_a, _b)
+_b.punkte[0] = _r["punkt"]
+core.wand_verknuepfen([_a, _b])
+_quer = [pl for pl, _c in _a.prims(schraffur=False)
+         if len(pl) == 2 and abs(pl[0][1] - pl[1][1]) < 1e-6 and abs(pl[0][1] + 165 * _K) < 1.0
+         and min(pl[0][0], pl[1][0]) < 400 * _K < max(pl[0][0], pl[1][0]) and min(pl[0][0], pl[1][0]) < 350 * _K]
+check(not _quer, "Winkelwand: keine Linie quer durch die anschliessende Wand")
+
+# Wand beruehrt eine andere schon mit einem Ende (unten links), das andere Ende (oben rechts) ist noch frei:
+# "Verbinden" setzt das freie Ende an, nicht das schon angeschlossene
+_K2 = 240 / 16.0
+_S2 = lambda p: (p[0] * _K2, -p[1] * _K2)
+for _xr in (560, 900):
+    _a = core.Wand([_S2(p) for p in [(98, 440), (98, 99), (_xr, 99)]], dicke=240)
+    _b = core.Wand([_S2(p) for p in [(489, 117), (489, 365.5), (98, 365.5)]], dicke=240)
+    for _x, _y in ((_a, _b), (_b, _a)):
+        _r = core.wand_verbinden(_x, _y)
+        check(_r.get("modus") == "t" and _r["wand"] is _b and _r["index"] == 0
+              and abs(_r["punkt"][1] + 99 * _K2) < 1e-6 and abs(_r["punkt"][0] - 489 * _K2) < 1e-6,
+              f"freies Ende wird angeschlossen (Laenge {_xr})")
+
+
+# Strecken: Wandende + Tuer im Fenster wandern mit
+import types
+from katiecad.ui.app import CadApp as _CA
+_w1 = core.Wand([(0, 0), (4000, 0)], dicke=240)
+_o = core.Oeffnung("tuer", 4000, 0, 0, dicke=240)
+_a = types.SimpleNamespace(_op=None, layers={}, _aktuelle_elemente_liste=lambda: [_w1, _o])
+_a._stretch_element = lambda el, i, dx, dy: _CA._stretch_element(_a, el, i, dx, dy)
+_CA._stretch_anwenden(_a, (3500, -500, 4500, 500), 1000, 0)
+check(_w1.punkte == [(0, 0), (5000, 0)] and _o.x == 5000, "Strecken: Wand + Tuer wandern mit")
+
+
+# Bloecke: Text/Attribut wird bei Drehung nie auf den Kopf gestellt (90/270 bleiben erlaubt)
+for _w, _erw in ((0, 0), (90, 90), (180, 0), (270, 270), (45, 45), (135, 315)):
+    _blk = core.BlockReferenz(0, 0, "T", [core.Linie(0, 0, 5, 0), core.Text(10, 0, "E", 3.5),
+                                          core.AttributDefinition(20, 0, tag="IND", wert="K1")], winkel=_w)
+    for _t in _blk.aufgeloest():
+        if isinstance(_t, core.Text):
+            check(abs(_t.winkel - _erw) < 1e-6, f"Text bei Blockdrehung {_w}: {_t.winkel}")
+_blk = core.BlockReferenz(0, 0, "T", [core.Text(10, 0, "E", 3.5)], winkel=180)
+_t = [e for e in _blk.aufgeloest() if isinstance(e, core.Text)][0]
+check(_t.einfuegepunkt == "oben_rechts" and abs(_t.x + 10) < 1e-6, "180 Grad: Anker gespiegelt, Position gedreht")
+
 print(f"test_wand - {ok} Checks bestanden")

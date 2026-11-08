@@ -1,0 +1,187 @@
+{
+  "format": "katiecad-block",
+  "version": 1,
+  "block": {
+    "name": "Leuchte allg",
+    "basispunkt": [
+      0.0,
+      0.0
+    ],
+    "elemente": [
+      {
+        "typ": "kreis",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": false,
+        "staerke": 0.35,
+        "cx": 0.0,
+        "cy": 0.0,
+        "r": 150.0
+      },
+      {
+        "typ": "linie",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": false,
+        "staerke": 0.35,
+        "x1": -106.06601717798185,
+        "y1": -106.0660171779823,
+        "x2": 106.06601717798185,
+        "y2": 106.0660171779823
+      },
+      {
+        "typ": "linie",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": false,
+        "staerke": 0.35,
+        "x1": 106.06601717798185,
+        "y1": -106.0660171779823,
+        "x2": -106.06601717798185,
+        "y2": 106.0660171779823
+      },
+      {
+        "typ": "attdef",
+        "layer": "Schrift",
+        "farbe": "#d8d0e8",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": null,
+        "x": 175.0,
+        "y": -5.0,
+        "inhalt": "<DEV>",
+        "hoehe": 100.0,
+        "winkel": 0.0,
+        "schriftart": "Arial",
+        "einfuegepunkt": "mitte_links",
+        "tag": "DEV",
+        "prompt": "DEVICE",
+        "wert": "-P",
+        "sichtbar": true
+      }
+    ],
+    "varianten": [
+      {
+        "name": "A",
+        "elemente": [
+          {
+            "typ": "kreis",
+            "layer": "F-Pieces",
+            "farbe": "#c29bff",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": false,
+            "staerke": 0.35,
+            "cx": 0.0,
+            "cy": 0.0,
+            "r": 150.0
+          },
+          {
+            "typ": "linie",
+            "layer": "F-Pieces",
+            "farbe": "#c29bff",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": false,
+            "staerke": 0.35,
+            "x1": -106.06601717798185,
+            "y1": -106.0660171779823,
+            "x2": 106.06601717798185,
+            "y2": 106.0660171779823
+          },
+          {
+            "typ": "linie",
+            "layer": "F-Pieces",
+            "farbe": "#c29bff",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": false,
+            "staerke": 0.35,
+            "x1": 106.06601717798185,
+            "y1": -106.0660171779823,
+            "x2": -106.06601717798185,
+            "y2": 106.0660171779823
+          },
+          {
+            "typ": "attdef",
+            "layer": "Schrift",
+            "farbe": "#d8d0e8",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": true,
+            "staerke": null,
+            "x": 175.0,
+            "y": -5.0,
+            "inhalt": "<DEV>",
+            "hoehe": 100.0,
+            "winkel": 0.0,
+            "schriftart": "Arial",
+            "einfuegepunkt": "mitte_links",
+            "tag": "DEV",
+            "prompt": "DEVICE",
+            "wert": "-P",
+            "sichtbar": true
+          }
+        ]
+      },
+      {
+        "name": "B",
+        "elemente": [
+          {
+            "typ": "kreis",
+            "layer": "F-Pieces",
+            "farbe": "#c29bff",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": false,
+            "staerke": 0.35,
+            "cx": 0.0,
+            "cy": 0.0,
+            "r": 150.0
+          },
+          {
+            "typ": "linie",
+            "layer": "F-Pieces",
+            "farbe": "#c29bff",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": false,
+            "staerke": 0.35,
+            "x1": -106.06601717798185,
+            "y1": -106.0660171779823,
+            "x2": 106.06601717798185,
+            "y2": 106.0660171779823
+          },
+          {
+            "typ": "linie",
+            "layer": "F-Pieces",
+            "farbe": "#c29bff",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": false,
+            "staerke": 0.35,
+            "x1": 106.06601717798185,
+            "y1": -106.0660171779823,
+            "x2": -106.06601717798185,
+            "y2": 106.0660171779823
+          },
+          {
+            "typ": "attdef",
+            "layer": "Schrift",
+            "farbe": "#d8d0e8",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": true,
+            "staerke": null,
+            "x": 0.0,
+            "y": 175.0,
+            "inhalt": "<DEV>",
+            "hoehe": 100.0,
+            "winkel": 90.0,
+            "schriftart": "Arial",
+            "einfuegepunkt": "mitte_links",
+            "tag": "DEV",
+            "prompt": "DEVICE",
+            "wert": "-P",
+            "sichtbar": true
+          }
+        ]
+      }
+    ]
+  }
+}

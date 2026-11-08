@@ -1,0 +1,156 @@
+{
+  "format": "katiecad-block",
+  "version": 1,
+  "block": {
+    "name": "Wärmemelder",
+    "basispunkt": [
+      0.0,
+      0.0
+    ],
+    "elemente": [
+      {
+        "typ": "rechteck",
+        "layer": "FP-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": null,
+        "x1": 105.0,
+        "y1": 105.0,
+        "x2": -105.0,
+        "y2": -105.0
+      },
+      {
+        "typ": "linie",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": -80.0,
+        "y1": 62.5,
+        "x2": -80.0,
+        "y2": -37.5
+      },
+      {
+        "typ": "bogen",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "cx": -55.0,
+        "cy": -37.5,
+        "r": 25.0,
+        "start": 180.0,
+        "ende": 270.0
+      },
+      {
+        "typ": "bogen",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "cx": 55.0,
+        "cy": -37.5,
+        "r": 25.0,
+        "start": 270.0,
+        "ende": 0.0
+      },
+      {
+        "typ": "linie",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": 80.0,
+        "y1": 62.5,
+        "x2": 80.0,
+        "y2": -37.5
+      },
+      {
+        "typ": "bogen",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "cx": 55.0,
+        "cy": -37.5,
+        "r": 25.0,
+        "start": 180.0,
+        "ende": 270.0
+      },
+      {
+        "typ": "bogen",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "cx": -55.0,
+        "cy": -37.5,
+        "r": 25.0,
+        "start": 270.0,
+        "ende": 0.0
+      },
+      {
+        "typ": "linie",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": 30.0,
+        "y1": -37.5,
+        "x2": 30.0,
+        "y2": -12.5
+      },
+      {
+        "typ": "linie",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": -30.0,
+        "y1": -5.0,
+        "x2": -30.0,
+        "y2": -37.5
+      },
+      {
+        "typ": "linie",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": -37.5,
+        "y1": -12.5,
+        "x2": 30.0,
+        "y2": -12.5
+      },
+      {
+        "typ": "attdef",
+        "layer": "Schrift",
+        "farbe": "#d8d0e8",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": null,
+        "x": 115.0,
+        "y": 0.0,
+        "inhalt": "<DEVICE>",
+        "hoehe": 100.0,
+        "winkel": 0.0,
+        "schriftart": "Arial",
+        "einfuegepunkt": "mitte_links",
+        "tag": "DEVICE",
+        "prompt": "Device",
+        "wert": "-G",
+        "sichtbar": true
+      }
+    ]
+  }
+}

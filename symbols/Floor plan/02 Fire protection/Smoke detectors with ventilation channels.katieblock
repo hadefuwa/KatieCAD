@@ -1,0 +1,140 @@
+{
+  "format": "katiecad-block",
+  "version": 1,
+  "block": {
+    "name": "Rauchmelder mit Lüftungskanäle",
+    "basispunkt": [
+      0.0,
+      0.0
+    ],
+    "elemente": [
+      {
+        "typ": "rechteck",
+        "layer": "FP-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": null,
+        "x1": 105.0,
+        "y1": 105.0,
+        "x2": -105.0,
+        "y2": -105.0
+      },
+      {
+        "typ": "linie",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": -105.0,
+        "y1": -55.0,
+        "x2": -55.0,
+        "y2": -105.0
+      },
+      {
+        "typ": "linie",
+        "layer": "FP-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": null,
+        "x1": -80.0,
+        "y1": 30.0,
+        "x2": 20.0,
+        "y2": -70.0
+      },
+      {
+        "typ": "linie",
+        "layer": "FP-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": null,
+        "x1": 20.0,
+        "y1": -70.0,
+        "x2": 0.0,
+        "y2": -30.0
+      },
+      {
+        "typ": "linie",
+        "layer": "FP-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": null,
+        "x1": 20.0,
+        "y1": -70.0,
+        "x2": -20.0,
+        "y2": -50.0
+      },
+      {
+        "typ": "linie",
+        "layer": "FP-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": null,
+        "x1": 70.0,
+        "y1": -20.0,
+        "x2": 50.0,
+        "y2": 20.0
+      },
+      {
+        "typ": "linie",
+        "layer": "FP-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": null,
+        "x1": 70.0,
+        "y1": -20.0,
+        "x2": 30.0,
+        "y2": 0.0
+      },
+      {
+        "typ": "linie",
+        "layer": "FP-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": null,
+        "x1": -30.0,
+        "y1": 80.0,
+        "x2": 70.0,
+        "y2": -20.0
+      },
+      {
+        "typ": "linie",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": 0.35,
+        "x1": 105.0,
+        "y1": 55.0,
+        "x2": 55.0,
+        "y2": 105.0
+      },
+      {
+        "typ": "attdef",
+        "layer": "Schrift",
+        "farbe": "#d8d0e8",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": null,
+        "x": 115.0,
+        "y": 0.0,
+        "inhalt": "<DEVICE>",
+        "hoehe": 100.0,
+        "winkel": 0.0,
+        "schriftart": "Arial",
+        "einfuegepunkt": "mitte_links",
+        "tag": "DEVICE",
+        "prompt": "Device",
+        "wert": "-G",
+        "sichtbar": true
+      }
+    ]
+  }
+}

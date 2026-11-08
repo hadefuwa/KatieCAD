@@ -1,0 +1,148 @@
+{
+  "format": "katiecad-block",
+  "version": 1,
+  "block": {
+    "name": "Taster",
+    "basispunkt": [
+      0.0,
+      0.0
+    ],
+    "elemente": [
+      {
+        "typ": "kreis",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": false,
+        "staerke": 0.35,
+        "cx": 0.0,
+        "cy": 0.0,
+        "r": 75.0
+      },
+      {
+        "typ": "kreis",
+        "layer": "F-Pieces",
+        "farbe": "#c29bff",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": false,
+        "staerke": 0.35,
+        "cx": 0.0,
+        "cy": 0.0,
+        "r": 105.0
+      },
+      {
+        "typ": "attdef",
+        "layer": "Schrift",
+        "farbe": "#d8d0e8",
+        "linientyp": "Volllinie (schmal)",
+        "eig_farbe": true,
+        "staerke": null,
+        "x": 120.0,
+        "y": -5.0,
+        "inhalt": "<DEV>",
+        "hoehe": 100.0,
+        "winkel": 0.0,
+        "schriftart": "Arial",
+        "einfuegepunkt": "mitte_links",
+        "tag": "DEV",
+        "prompt": "DEVICE",
+        "wert": "-S",
+        "sichtbar": true
+      }
+    ],
+    "varianten": [
+      {
+        "name": "A",
+        "elemente": [
+          {
+            "typ": "kreis",
+            "layer": "F-Pieces",
+            "farbe": "#c29bff",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": false,
+            "staerke": 0.35,
+            "cx": 0.0,
+            "cy": 0.0,
+            "r": 75.0
+          },
+          {
+            "typ": "kreis",
+            "layer": "F-Pieces",
+            "farbe": "#c29bff",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": false,
+            "staerke": 0.35,
+            "cx": 0.0,
+            "cy": 0.0,
+            "r": 105.0
+          },
+          {
+            "typ": "attdef",
+            "layer": "Schrift",
+            "farbe": "#d8d0e8",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": true,
+            "staerke": null,
+            "x": 120.0,
+            "y": -5.0,
+            "inhalt": "<DEV>",
+            "hoehe": 100.0,
+            "winkel": 0.0,
+            "schriftart": "Arial",
+            "einfuegepunkt": "mitte_links",
+            "tag": "DEV",
+            "prompt": "DEVICE",
+            "wert": "-S",
+            "sichtbar": true
+          }
+        ]
+      },
+      {
+        "name": "B",
+        "elemente": [
+          {
+            "typ": "kreis",
+            "layer": "F-Pieces",
+            "farbe": "#c29bff",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": false,
+            "staerke": 0.35,
+            "cx": 0.0,
+            "cy": 0.0,
+            "r": 75.0
+          },
+          {
+            "typ": "kreis",
+            "layer": "F-Pieces",
+            "farbe": "#c29bff",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": false,
+            "staerke": 0.35,
+            "cx": 0.0,
+            "cy": 0.0,
+            "r": 105.0
+          },
+          {
+            "typ": "attdef",
+            "layer": "Schrift",
+            "farbe": "#d8d0e8",
+            "linientyp": "Volllinie (schmal)",
+            "eig_farbe": true,
+            "staerke": null,
+            "x": 0.0,
+            "y": 115.0,
+            "inhalt": "<DEV>",
+            "hoehe": 100.0,
+            "winkel": 90.0,
+            "schriftart": "Arial",
+            "einfuegepunkt": "mitte_links",
+            "tag": "DEV",
+            "prompt": "DEVICE",
+            "wert": "-S",
+            "sichtbar": true
+          }
+        ]
+      }
+    ]
+  }
+}

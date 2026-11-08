@@ -42,7 +42,7 @@ try:
 except ImportError:
     PILLOW_VERFUEGBAR = False
 
-from katiecad.common.i18n import tr, SPRACHE, setze_sprache, TEXTE
+from katiecad.common.i18n import tr, SPRACHE, setze_sprache, TEXTE, datum_text
 from katiecad.common.config import (lade_konfiguration, speichere_sprache,
                              speichere_konfiguration)
 from katiecad.model import titleblock as TB
@@ -72,7 +72,7 @@ from katiecad.model.core import (
     BEFEHLE, PdfSeite, ist_dunkel,
     E_DEVICES, E_LINES, E_CABLE, E_CLAMPS, E_PIN, ELEKTRO_LAYER, FTEXT_LAYER,
     Layer, Layout, Element, Linie, Kreis, Bogen, Rechteck, Polylinie, Text,
-    Ellipse, Spline, Wand, Oeffnung, Raum, RAUM_LAYER, RAUM_LAYER_FARBE, WAND_LAYER, WAND_LAYER_FARBE,
+    Ellipse, Spline, Wand, _variantenname, Oeffnung, Raum, RAUM_LAYER, RAUM_LAYER_FARBE, WAND_LAYER, WAND_LAYER_FARBE,
     wand_verknuepfen, wand_in_linien, wand_verbinden, wand_schliessen,
     Bemassung, Viewport, Schraffur, Bild, konturen_aus_elementen, bereich_an_punkt,
     AttributDefinition, Leitung, Verbindungspunkt, Querverweis,
@@ -287,7 +287,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
 
         _style_setup(root)
 
-        self.layers = self._standard_layers()
+        self.layers = self._standard_layers(vorlage=True)
         self.aktiver_layer = tk.StringVar(value="0")
 
         self.elemente = []
@@ -430,7 +430,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self.bem_endstueck = tk.StringVar(value="pfeil")        # "pfeil" | "strich"
         self._bem_end_anzeige = tk.StringVar(value=tr("dlg.eig.end.pfeil"))
         self.bem_dez = tk.IntVar(value=2)
-        self.dezimalkomma = tk.BooleanVar(value=(SPRACHE["aktuell"] == "de"))
+        self.dezimalkomma = tk.BooleanVar(value=(SPRACHE["aktuell"] != "en"))
         self._pts = []
         self._bem_kreis = None
         self._snap_ausschluss = None
@@ -865,12 +865,8 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self._clipboard = [el.to_dict() for el in self.auswahl]
         self._clipboard_basispunkt = None
         self._clipboard_mit_basis = False
-        de = SPRACHE["aktuell"] == "de"
         self.status.set(f"{len(self._clipboard)} " +
-                        ("Element(e) kopiert. Strg+V zum Einfügen (Basispunkt = "
-                         "linke untere Ecke)." if de else
-                         "element(s) copied. Ctrl+V to paste (base point = "
-                         "lower-left corner)."))
+                        (tr("txt.0064")))
         return "break"
 
     def kopieren_mit_basispunkt(self, event=None):
@@ -880,12 +876,8 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
     def _basispunkt_setzen(self, x_mm, y_mm):
         self._clipboard_basispunkt = (x_mm, y_mm)
         self._warte_auf_basispunkt = False
-        de = SPRACHE["aktuell"] == "de"
         self.status.set(
-            (f"Basispunkt gesetzt auf ({x_mm:.2f}, {y_mm:.2f}) mm. "
-             "Strg+V zum Einfügen." if de else
-             f"Base point set to ({x_mm:.2f}, {y_mm:.2f}) mm. "
-             "Ctrl+V to paste."))
+            (tr("txt.0008", p0=x_mm, p1=y_mm)))
 
     def ausschneiden(self, event=None):
         if not self.auswahl:
@@ -895,10 +887,8 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self._clipboard_basispunkt = None
         self._clipboard_mit_basis = False
         self.auswahl_loeschen()
-        de = SPRACHE["aktuell"] == "de"
         self.status.set(f"{len(self._clipboard)} " +
-                        ("Element(e) ausgeschnitten. Strg+V zum Einfügen." if de
-                         else "element(s) cut. Ctrl+V to paste."))
+                        (tr("txt.0065")))
         return "break"
 
     def einfuegen(self, event=None):
@@ -937,10 +927,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             self._paste_bezug = (min(xs), min(ys)) if xs else (0.0, 0.0)
         self._paste_aktiv = True
         self.auswahl = []
-        de = SPRACHE["aktuell"] == "de"
-        self.status.set("Einfügen: Maus bewegen, Klick = platzieren, ESC = abbrechen."
-                        if de else
-                        "Paste: move mouse, click = place, ESC = cancel.")
+        self.status.set(tr("txt.0009"))
         self._paste_vorschau_aktualisieren(self._maus_px[0], self._maus_px[1])
         return "break"
 
@@ -961,11 +948,8 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self._einrasten(neue_el)
         self.auswahl = neue_el
         self.redraw()
-        de = SPRACHE["aktuell"] == "de"
         self.status.set(f"{len(neue_el)} " +
-                        (f"Element(e) dupliziert (Versatz {PASTE_OFFSET_MM} mm)."
-                         if de else
-                         f"element(s) duplicated (offset {PASTE_OFFSET_MM} mm)."))
+                        (tr("txt.0066", p0=PASTE_OFFSET_MM)))
         return "break"
 
     def _paste_abbrechen(self):
@@ -998,12 +982,8 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         n = len(neue_el)
         self._paste_abbrechen()
         self.redraw()
-        de = SPRACHE["aktuell"] == "de"
         self.status.set(f"{n} " +
-                        (f"Element(e) platziert an ({ziel_mm[0]:.2f}, "
-                         f"{ziel_mm[1]:.2f}) mm." if de else
-                         f"element(s) placed at ({ziel_mm[0]:.2f}, "
-                         f"{ziel_mm[1]:.2f}) mm."))
+                        (tr("txt.0067", p0=ziel_mm[0], p1=ziel_mm[1])))
 
     def _paste_vorschau_aktualisieren(self, maus_px_x, maus_px_y):
         if not self._paste_aktiv or not self._paste_vorlagen:
@@ -1135,7 +1115,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         m_datei.add_command(label=tr("menu.datei.neu"), command=self.neu)
         m_datei.add_command(label=tr("menu.datei.oeffnen"), command=self.oeffnen)
         m_datei.add_command(label=tr("menu.datei.speichern"), command=self.speichern,
-                            accelerator="Strg+S" if SPRACHE["aktuell"] == "de" else "Ctrl+S")
+                            accelerator=tr("txt.0254"))
         m_datei.add_separator()
         m_datei.add_command(label=tr("menu.datei.import_dxf"), command=self.import_dxf)
         m_datei.add_command(label=tr("menu.datei.import_dwg"), command=self.import_dwg)
@@ -1185,10 +1165,6 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         m_projekt.add_command(label=tr("menu.datei.export_projekt_dxf"),
                               command=self.projekt_dxf_exportieren)
         m_projekt.add_separator()
-        self._v_einpolig_mit = tk.BooleanVar(value=False)
-        m_projekt.add_checkbutton(label=tr("menu.projekt.einpolig_mit"),
-                                  variable=self._v_einpolig_mit,
-                                  command=self.einpolig_auswerten_umschalten)
         m_projekt.add_command(label=tr("menu.projekt.nummerieren"),
                               command=self.geraete_nummerieren)
         m_projekt.add_command(label=tr("menu.projekt.bauteile"),
@@ -1209,57 +1185,33 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                           bg=FARBEN["bg_mittel"], fg=FARBEN["cyan"],
                           activebackground=FARBEN["cyan"],
                           activeforeground=FARBEN["bg_dunkel"])
+        def _sub(titel_key):
+            m = tk.Menu(m_bearb, tearoff=0,
+                        bg=FARBEN["bg_mittel"], fg=FARBEN["cyan"],
+                        activebackground=FARBEN["cyan"],
+                        activeforeground=FARBEN["bg_dunkel"])
+            m_bearb.add_cascade(label=tr(titel_key), menu=m)
+            return m
+
+        # 1. Undo / redo
         m_bearb.add_command(label=tr("menu.bearbeiten.undo"), command=self.undo)
         m_bearb.add_command(label=tr("menu.bearbeiten.redo"), command=self.redo)
         m_bearb.add_separator()
-        m_bearb.add_command(label=tr("menu.bearbeiten.kopieren"), command=self.kopieren)
-        m_bearb.add_command(label=tr("menu.bearbeiten.kopieren_basis"),
-                            command=self.kopieren_mit_basispunkt)
+        # 2. Clipboard
+        m_kop = _sub("menu.bearbeiten.kopieren_menue")
+        m_kop.add_command(label=tr("menu.bearbeiten.kopieren"), command=self.kopieren)
+        m_kop.add_command(label=tr("menu.bearbeiten.kopieren_basis"),
+                          command=self.kopieren_mit_basispunkt)
+        m_kop.add_command(label=tr("menu.bearbeiten.kopieren_praezise"),
+                          command=lambda: self._op_start("copy"))
         m_bearb.add_command(label=tr("menu.bearbeiten.ausschneiden"), command=self.ausschneiden)
         m_bearb.add_command(label=tr("menu.bearbeiten.einfuegen"), command=self.einfuegen)
         m_bearb.add_command(label=tr("menu.bearbeiten.duplizieren"), command=self.duplizieren)
-        m_bearb.add_command(label=tr("menu.bearbeiten.eigenschaften"),
-                            command=self.eigenschaften_fenster)
-        m_bearb.add_command(label=tr("menu.bearbeiten.suchen"),
-                            command=self.suchen_ersetzen)
-        m_bearb.add_command(label=tr("menu.bearbeiten.eig_uebertragen"),
-                            command=self.eigenschaften_uebertragen_start)
-        m_bearb.add_command(label=tr("menu.bearbeiten.messen"),
-                            command=self.messen_start)
-        m_bearb.add_command(label=tr("menu.bearbeiten.schnellauswahl"),
-                            command=self.schnellauswahl)
-        m_bearb.add_command(label=tr("menu.bearbeiten.versatz"),
-                            command=self.versatz_start)
-        m_bearb.add_command(label=tr("menu.bearbeiten.laenge"),
-                            command=self.laenge_start)
-        m_bearb.add_command(label=tr("menu.bearbeiten.manip"),
-                            command=self.manipulator_umschalten)
-        m_bearb.add_command(label=tr("menu.bearbeiten.manip_pivot"),
-                            command=self.manipulator_versetzen)
-        m_bearb.add_command(label=tr("menu.bearbeiten.manip_zentrum"),
-                            command=self.manipulator_zentrieren)
-        m_ausr = tk.Menu(m_bearb, tearoff=0,
-                         bg=FARBEN["bg_mittel"], fg=FARBEN["cyan"],
-                         activebackground=FARBEN["cyan"],
-                         activeforeground=FARBEN["bg_dunkel"])
-        m_ausr.add_command(label=tr("menu.ausrichten.zwei_punkte"),
-                           command=lambda: self._befehl("ausrichten2p"))
-        m_ausr.add_separator()
-        for k in ("links", "rechts", "oben", "unten", "mitte_h", "mitte_v"):
-            m_ausr.add_command(label=tr("menu.ausrichten." + k),
-                               command=lambda k=k: self.ausrichten(k))
-        m_bearb.add_cascade(label=tr("menu.bearbeiten.ausrichten"), menu=m_ausr)
-        m_bearb.add_command(label=tr("menu.bearbeiten.abrunden"),
-                            command=lambda: self.ecke_start("abrunden"))
-        m_bearb.add_command(label=tr("menu.bearbeiten.fase"),
-                            command=lambda: self.ecke_start("fase"))
         m_bearb.add_separator()
+        # 3. Modify: move / rotate / scale / mirror / stretch / array, then offset, length,
+        #    trim, break, fillet, chamfer, align
         m_bearb.add_command(label=tr("menu.bearbeiten.verschieben"),
                             command=lambda: self._op_start("move"))
-        m_bearb.add_command(label=tr("menu.bearbeiten.kopieren_praezise"),
-                            command=lambda: self._op_start("copy"))
-        m_bearb.add_command(label=tr("menu.bearbeiten.reihe"),
-                            command=lambda: self._op_start("array"))
         m_bearb.add_command(label=tr("menu.bearbeiten.drehen"),
                             command=lambda: self._op_start("rotate"))
         m_bearb.add_command(label=tr("menu.bearbeiten.skalieren"),
@@ -1268,17 +1220,55 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                             command=lambda: self._op_start("mirror"))
         m_bearb.add_command(label=tr("menu.bearbeiten.strecken"),
                             command=lambda: self._op_start("stretch"))
+        m_bearb.add_command(label=tr("menu.bearbeiten.reihe"),
+                            command=lambda: self._op_start("array"))
+        m_bearb.add_separator()
+        m_bearb.add_command(label=tr("menu.bearbeiten.versatz"),
+                            command=self.versatz_start)
+        m_bearb.add_command(label=tr("menu.bearbeiten.laenge"),
+                            command=self.laenge_start)
         m_bearb.add_command(label=tr("tb.wz.stutzen"),
                             command=lambda: self._werkzeug_aus_menue("stutzen"))
         m_bearb.add_command(label=tr("tb.wz.brechen"),
                             command=lambda: self._werkzeug_aus_menue("brechen"))
+        m_bearb.add_command(label=tr("menu.bearbeiten.abrunden"),
+                            command=lambda: self.ecke_start("abrunden"))
+        m_bearb.add_command(label=tr("menu.bearbeiten.fase"),
+                            command=lambda: self.ecke_start("fase"))
+        m_ausr = _sub("menu.bearbeiten.ausrichten")
+        m_ausr.add_command(label=tr("menu.ausrichten.zwei_punkte"),
+                           command=lambda: self._befehl("ausrichten2p"))
+        m_ausr.add_separator()
+        for k in ("links", "rechts", "oben", "unten", "mitte_h", "mitte_v"):
+            m_ausr.add_command(label=tr("menu.ausrichten." + k),
+                               command=lambda k=k: self.ausrichten(k))
+        m_man = _sub("menu.bearbeiten.manipulator")
+        m_man.add_command(label=tr("menu.bearbeiten.manip"),
+                          command=self.manipulator_umschalten)
+        m_man.add_command(label=tr("menu.bearbeiten.manip_pivot"),
+                          command=self.manipulator_versetzen)
+        m_man.add_command(label=tr("menu.bearbeiten.manip_zentrum"),
+                          command=self.manipulator_zentrieren)
         m_bearb.add_separator()
-        m_bearb.add_command(label=tr("menu.bearbeiten.alles_loeschen"), command=self.neu)
+        # 4. Properties / inspect / select
+        m_bearb.add_command(label=tr("menu.bearbeiten.eigenschaften"),
+                            command=self.eigenschaften_fenster)
+        m_bearb.add_command(label=tr("menu.bearbeiten.eig_uebertragen"),
+                            command=self.eigenschaften_uebertragen_start)
+        m_bearb.add_command(label=tr("menu.bearbeiten.suchen"),
+                            command=self.suchen_ersetzen)
+        m_bearb.add_command(label=tr("menu.bearbeiten.messen"),
+                            command=self.messen_start)
         m_bearb.add_separator()
-        m_bearb.add_command(label=tr("menu.bearbeiten.auswahl_loeschen"),
-                            command=self.auswahl_loeschen)
+        m_bearb.add_command(label=tr("menu.bearbeiten.schnellauswahl"),
+                            command=self.schnellauswahl)
         m_bearb.add_command(label=tr("menu.bearbeiten.alles_markieren"),
                             command=self.alle_markieren)
+        m_bearb.add_separator()
+        # 5. Delete
+        m_bearb.add_command(label=tr("menu.bearbeiten.auswahl_loeschen"),
+                            command=self.auswahl_loeschen)
+        m_bearb.add_command(label=tr("menu.bearbeiten.alles_loeschen"), command=self.neu)
         menubar.add_cascade(label=tr("menu.bearbeiten"), menu=m_bearb)
 
         # Insert
@@ -1317,18 +1307,23 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         m_einf.add_separator()
         m_einf.add_command(label=tr("menu.einfuegen.text"),
                            command=lambda: self._werkzeug_aus_menue("text"))
-        m_einf.add_command(label=tr("menu.einfuegen.bemassung"),
-                           command=lambda: self._werkzeug_aus_menue("bemassung"))
-        m_einf.add_command(label=tr("menu.einfuegen.radius"),
-                           command=lambda: self._bem_art_starten("radius"))
-        m_einf.add_command(label=tr("menu.einfuegen.durchmesser"),
-                           command=lambda: self._bem_art_starten("durchmesser"))
-        m_einf.add_command(label=tr("menu.einfuegen.kette"),
-                           command=lambda: self._bem_art_starten("kette"))
-        m_einf.add_command(label=tr("menu.einfuegen.winkel"),
-                           command=lambda: self._bem_art_starten("winkel"))
-        m_einf.add_command(label=tr("menu.einfuegen.winkel_linien"),
-                           command=lambda: self._bem_art_starten("winkel_linien"))
+        m_bem = tk.Menu(m_einf, tearoff=0,
+                        bg=FARBEN["bg_mittel"], fg=FARBEN["cyan"],
+                        activebackground=FARBEN["cyan"],
+                        activeforeground=FARBEN["bg_dunkel"])
+        m_bem.add_command(label=tr("menu.einfuegen.bemassung_linear"),
+                          command=lambda: self._werkzeug_aus_menue("bemassung"))
+        m_bem.add_command(label=tr("menu.einfuegen.radius"),
+                          command=lambda: self._bem_art_starten("radius"))
+        m_bem.add_command(label=tr("menu.einfuegen.durchmesser"),
+                          command=lambda: self._bem_art_starten("durchmesser"))
+        m_bem.add_command(label=tr("menu.einfuegen.kette"),
+                          command=lambda: self._bem_art_starten("kette"))
+        m_bem.add_command(label=tr("menu.einfuegen.winkel"),
+                          command=lambda: self._bem_art_starten("winkel"))
+        m_bem.add_command(label=tr("menu.einfuegen.winkel_linien"),
+                          command=lambda: self._bem_art_starten("winkel_linien"))
+        m_einf.add_cascade(label=tr("menu.einfuegen.bemassung"), menu=m_bem)
         m_einf.add_separator()
         m_einf.add_command(label=tr("menu.einfuegen.viewport"),
                            command=self.viewport_modus_starten)
@@ -1379,24 +1374,8 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         m_ansicht.add_command(label=tr("menu.ansicht.zoom_grenzen"),
                               command=self.zoom_grenzen)
         m_ansicht.add_separator()
-        m_ansicht.add_command(label=tr("menu.ansicht.bg_modell"),
-                              command=lambda: self.bg_waehlen("modell"))
-        m_ansicht.add_command(label=tr("menu.ansicht.bg_layout"),
-                              command=lambda: self.bg_waehlen("layout"))
-        m_ansicht.add_separator()
         m_ansicht.add_command(label=tr("menu.ansicht.reset"),
                               command=self._reset_view)
-        m_ansicht.add_separator()
-        m_ansicht.add_command(label=tr("menu.ansicht.schriften"),
-                              command=self.schriften_verwalten)
-        m_farbe = tk.Menu(m_ansicht, tearoff=0, bg=FARBEN["bg_mittel"], fg=FARBEN["cyan"],
-                          activebackground=FARBEN["cyan"],
-                          activeforeground=FARBEN["bg_dunkel"])
-        for _n in FARBSCHEMEN:
-            m_farbe.add_command(
-                label=("\u25cf " if _n == FARBSCHEMA["aktuell"] else "    ") + tr("menu.farbschema." + _n),
-                command=lambda n=_n: self.farbschema_wechseln(n))
-        m_ansicht.add_cascade(label=tr("menu.ansicht.farbschema"), menu=m_farbe)
         menubar.add_cascade(label=tr("menu.ansicht"), menu=m_ansicht)
 
         # Blocks
@@ -1406,9 +1385,11 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                             activeforeground=FARBEN["bg_dunkel"])
         m_bloecke.add_command(label=tr("menu.einfuegen.block_einfuegen"),
                               command=self.block_einfuegen,
-                              accelerator="Strg+B" if SPRACHE["aktuell"] == "de" else "Ctrl+B")
+                              accelerator=tr("txt.0255"))
         m_bloecke.add_command(label=tr("menu.einfuegen.block_erzeugen"),
                               command=self.block_erzeugen)
+        m_bloecke.add_command(label=tr("menu.bloecke.variante"),
+                              command=self.variante_hinzufuegen)
         m_bloecke.add_separator()
         m_bloecke.add_command(label=tr("menu.bloecke.attdef"),
                               command=self.attdef_erstellen)
@@ -1485,18 +1466,36 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                          command=lambda: self.ansicht3d_befehl("verschmelzen"))
         menubar.add_cascade(label=tr("menu.3d"), menu=m_3d)
 
-        # Language
-        m_sprache = tk.Menu(menubar, tearoff=0,
+        # Settings (language, colour scheme, fonts)
+        m_einst = tk.Menu(menubar, tearoff=0,
+                          bg=FARBEN["bg_mittel"], fg=FARBEN["cyan"],
+                          activebackground=FARBEN["cyan"],
+                          activeforeground=FARBEN["bg_dunkel"])
+        m_sprache = tk.Menu(m_einst, tearoff=0,
                             bg=FARBEN["bg_mittel"], fg=FARBEN["cyan"],
                             activebackground=FARBEN["cyan"],
                             activeforeground=FARBEN["bg_dunkel"])
-        m_sprache.add_radiobutton(label=tr("menu.sprache.de"), value="de",
-                                  variable=self.sprache_var,
-                                  command=lambda: self.sprache_wechseln("de"))
-        m_sprache.add_radiobutton(label=tr("menu.sprache.en"), value="en",
-                                  variable=self.sprache_var,
-                                  command=lambda: self.sprache_wechseln("en"))
-        menubar.add_cascade(label=tr("menu.sprache"), menu=m_sprache)
+        for _sp in ("de", "en", "es"):
+            m_sprache.add_radiobutton(label=tr("menu.sprache." + _sp), value=_sp,
+                                      variable=self.sprache_var,
+                                      command=lambda sp=_sp: self.sprache_wechseln(sp))
+        m_einst.add_cascade(label=tr("menu.sprache"), menu=m_sprache)
+        m_farbe = tk.Menu(m_einst, tearoff=0, bg=FARBEN["bg_mittel"], fg=FARBEN["cyan"],
+                          activebackground=FARBEN["cyan"],
+                          activeforeground=FARBEN["bg_dunkel"])
+        for _n in FARBSCHEMEN:
+            m_farbe.add_command(
+                label=("\u25cf " if _n == FARBSCHEMA["aktuell"] else "    ") + tr("menu.farbschema." + _n),
+                command=lambda n=_n: self.farbschema_wechseln(n))
+        m_einst.add_cascade(label=tr("menu.ansicht.farbschema"), menu=m_farbe)
+        m_einst.add_command(label=tr("menu.ansicht.bg_modell"),
+                            command=lambda: self.bg_waehlen("modell"))
+        m_einst.add_command(label=tr("menu.ansicht.bg_layout"),
+                            command=lambda: self.bg_waehlen("layout"))
+        m_einst.add_separator()
+        m_einst.add_command(label=tr("menu.ansicht.schriften"),
+                            command=self.schriften_verwalten)
+        menubar.add_cascade(label=tr("menu.einstellungen"), menu=m_einst)
 
         # Help
         m_hilfe = tk.Menu(menubar, tearoff=0,
@@ -1761,7 +1760,10 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             tb3, bg_aktuell,
             lambda: self.bg_waehlen("layout" if self._ist_layout() else "modell"))
         self.bg_btn.pack(side=tk.LEFT, padx=4)
-        self.bg_preset_cb = ttk.Combobox(tb3, values=list(BG_PRESETS.keys()),
+        # presets with translated names (same order as BG_PRESETS)
+        self._bg_preset_map = {tr("dlg.farbe.preset_%d" % i): hexf
+                               for i, hexf in enumerate(BG_PRESETS.values())}
+        self.bg_preset_cb = ttk.Combobox(tb3, values=list(self._bg_preset_map),
                                          width=18, state="readonly")
         self.bg_preset_cb.pack(side=tk.LEFT, padx=2)
         self.bg_preset_cb.bind("<<ComboboxSelected>>",
@@ -1936,7 +1938,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             return b
 
         self.fang_btn = toggle_btn("osnap",
-                                    "OFANG" if SPRACHE["aktuell"] == "de" else "OSNAP",
+                                    tr("txt.0252"),
                                     self.osnap, key_hint="F3")
         self.fang_pfeil = FlatButton(
             bar, text="▾", padx=4, pady=4,
@@ -1971,8 +1973,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                            values=RASTER_GROESSEN, width=6)
         cb2.pack(side=tk.LEFT, padx=2)
         cb2.bind("<Return>", lambda e: self.status.set(
-            (f"Fang: {self._zahl(self.fang_mm, 5):g} mm" if SPRACHE["aktuell"] == "de"
-             else f"Snap: {self._zahl(self.fang_mm, 5):g} mm")))
+            (tr("txt.0260", p0=self._zahl(self.fang_mm, 5)))))
         ttk.Label(bar, text="mm").pack(side=tk.LEFT, padx=(0, 8))
 
         ttk.Separator(bar, orient=tk.VERTICAL).pack(side=tk.LEFT, fill=tk.Y, padx=8)
@@ -1988,7 +1989,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
     def _retranslate_statusbar(self):
         if hasattr(self, "fang_btn") and "osnap" in self._status_buttons:
             b, hint = self._status_buttons["osnap"]
-            b.config(text=("OFANG" if SPRACHE["aktuell"] == "de" else "OSNAP")
+            b.config(text=(tr("txt.0252"))
                      + (f" [{hint}]" if hint else ""))
         mapping = {
             "snap": "sb.fang", "ortho": "sb.ortho", "raster": "sb.raster",
@@ -2110,7 +2111,6 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self.bem_art.set(art)
         self.aktives_werkzeug.set("bemassung")
         self._werkzeug_gewechselt()
-        de = SPRACHE["aktuell"] == "de"
         if art in ("winkel", "winkel_linien"):
             self.status.set(self._winkel_hinweis())
             self._update_eingabe_hinweis()
@@ -2119,14 +2119,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             self.status.set(self._kette_hinweis())
             self._update_eingabe_hinweis()
             return
-        self.status.set(
-            ("Radius-Bemaßung: Kreis/Bogen anklicken, dann Textposition."
-             if de and art == "radius" else
-             "Radius dimension: click circle/arc, then text position."
-             if art == "radius" else
-             "Durchmesser-Bemaßung: Kreis/Bogen anklicken, dann Textposition."
-             if de else
-             "Diameter dimension: click circle/arc, then text position."))
+        self.status.set(tr("txt.0302" if art == "radius" else "txt.0151"))
 
     def _aktualisiere_osnap_anzeige(self):
         aktive = [k for k, v in self.osnap_modi.items() if v.get()]
@@ -2349,17 +2342,14 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self._vp_modus_var.set("layout")
         self.redraw()
         self._viewport_modus_anzeige_aktualisieren()
-        de = SPRACHE["aktuell"] == "de"
-        self.status.set("Layout-Ansicht." if de else "Layout view.")
+        self.status.set(tr("txt.0010"))
 
     def _vp_zoom_faktor(self, faktor):
         vp = self._aktiver_viewport
         if vp is None:
             return
         if vp.gesperrt:
-            de = SPRACHE["aktuell"] == "de"
-            self.status.set("Viewport-Maßstab ist gesperrt." if de
-                            else "Viewport scale is locked.")
+            self.status.set(tr("txt.0068"))
             return
         self._vp_zoom_um_punkt(vp, faktor, self._vp_mittelpunkt_mm(vp))
         self._viewport_modus_anzeige_aktualisieren()
@@ -2383,9 +2373,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         if vp is None:
             return
         if vp.gesperrt:
-            de = SPRACHE["aktuell"] == "de"
-            self.status.set("Viewport-Maßstab ist gesperrt." if de
-                            else "Viewport scale is locked.")
+            self.status.set(tr("txt.0068"))
             self._viewport_modus_anzeige_aktualisieren()
             return
         text = self._vp_massstab_var.get()
@@ -2403,18 +2391,14 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         vp.modell_zentrum_y = mod_y - (cy_mm - vcy) / vp.zoom
         self.redraw()
         self._viewport_modus_anzeige_aktualisieren()
-        de = SPRACHE["aktuell"] == "de"
-        self.status.set((f"Viewport-Maßstab {text}" if de
-                         else f"Viewport scale {text}"))
+        self.status.set((tr("txt.0011", p0=text)))
 
     def _vp_fit_aktueller(self):
         vp = self._aktiver_viewport
         if vp is None:
             return
         if vp.gesperrt:
-            de = SPRACHE["aktuell"] == "de"
-            self.status.set("Viewport-Maßstab ist gesperrt." if de
-                            else "Viewport scale is locked.")
+            self.status.set(tr("txt.0068"))
             return
         self._vp_auto_fit(vp)
         self._viewport_modus_anzeige_aktualisieren()
@@ -2425,11 +2409,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             return
         vp.gesperrt = bool(self._vp_sperre_var.get())
         self._viewport_modus_anzeige_aktualisieren()
-        de = SPRACHE["aktuell"] == "de"
-        self.status.set(("Viewport-Maßstab " + (
-            "gesperrt." if vp.gesperrt else "entsperrt.") if de else
-            "Viewport scale " + (
-            "locked." if vp.gesperrt else "unlocked.")))
+        self.status.set(((tr("txt.0267") + (tr("txt.0268") if vp.gesperrt else tr("txt.0269")))))
 
     # --------------------------------------------------------
     def ansicht_wechseln(self):
@@ -2468,12 +2448,11 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self._zeichne_raster()
         self.redraw()
         self._viewport_modus_anzeige_aktualisieren()
-        de = SPRACHE["aktuell"] == "de"
         if self._ist_layout():
-            self.status.set(("Ansicht: Layout '" if de else "View: layout '")
+            self.status.set((tr("txt.0194"))
                             + self.layout.name + "'")
         else:
-            self.status.set(("Ansicht: Modell" if de else "View: model"))
+            self.status.set((tr("txt.0069")))
 
     def setze_ansicht(self, name):
         self.ansicht.set(name)
@@ -2481,7 +2460,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
 
     def bg_waehlen(self, bereich):
         aktuell = self.bg_modell if bereich == "modell" else self.bg_layout
-        hexc = farbe_waehlen(self.root, aktuell, tr("tb.hintergrund"))
+        hexc = farbe_waehlen(self.root, aktuell, tr("tb.hintergrund"), presets=BG_PRESETS)
         if not hexc:
             return
         self._bg_setzen(bereich, hexc)
@@ -2504,10 +2483,9 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self._mark_dirty()
 
     def _bg_preset_angewendet(self, event=None):
-        auswahl = self.bg_preset_cb.get()
-        if auswahl in BG_PRESETS:
-            self._bg_setzen("layout" if self._ist_layout() else "modell",
-                            BG_PRESETS[auswahl])
+        hexf = self._bg_preset_map.get(self.bg_preset_cb.get())
+        if hexf:
+            self._bg_setzen("layout" if self._ist_layout() else "modell", hexf)
 
     def _layer_gewechselt(self, event=None):
         self._layer_info_aktualisieren()
@@ -2516,10 +2494,8 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self._farb_swatch_aktualisieren()
         l = self.layers.get(self.aktiver_layer.get())
         if l:
-            de = SPRACHE["aktuell"] == "de"
             self.lbl_layer_info.config(
-                text=(f"Farbe: {l.farbe}   Stärke: {l.staerke} mm" if de
-                      else f"Color: {l.farbe}   Weight: {l.staerke} mm"))
+                text=(tr("txt.0152", p0=l.farbe, p1=l.staerke)))
 
     def layer_verwalten(self):
         LayerDialog(self.root, self)
@@ -2534,8 +2510,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             self.view["oy"] = ch / 2
             self.redraw()
             self._zeichne_raster()
-            de = SPRACHE["aktuell"] == "de"
-            self.status.set("Zoom Grenzen (leer)." if de else "Zoom extents (empty).")
+            self.status.set(tr("txt.0070"))
             return
         xs, ys = [], []
         for el in liste:
@@ -2560,8 +2535,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self.view["oy"] = ch / 2 + cy * self.view["zoom"]
         self.redraw()
         self._zeichne_raster()
-        de = SPRACHE["aktuell"] == "de"
-        self.status.set("Zoom Grenzen ausgeführt." if de else "Zoom extents applied.")
+        self.status.set(tr("txt.0012"))
         return "break"
 
     # --------------------------------------------------------
@@ -2665,18 +2639,28 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             self._block_einfuege_name = None
             self._clear_temp()
             self._update_eingabe_hinweis()
-            de = SPRACHE["aktuell"] == "de"
-            self.status.set("Einfügen abgebrochen." if de else "Paste cancelled.")
+            self.status.set(tr("txt.0071"))
             self.redraw()
             return
         if self._block_erzeuge_auswahl is not None:
             self._block_erzeuge_auswahl = None
             self._clear_temp()
             self._update_eingabe_hinweis()
-            de = SPRACHE["aktuell"] == "de"
-            self.status.set("Block-Erzeugen abgebrochen." if de
-                            else "Block creation cancelled.")
+            self.status.set(tr("txt.0072"))
             self.redraw()
+            return
+        if wz_e in ("wand", "raum") and self.aktuelle_polylinie:
+            # a wall / room in progress is discarded; the tool stays active (a second ESC
+            # with nothing in progress goes back to the selection)
+            self.aktuelle_polylinie = []
+            self.letzter_punkt = None
+            self._pts = []
+            self._snap_marker_loeschen()
+            self._clear_temp()
+            self._eingabe_zuruecksetzen()
+            self._update_eingabe_hinweis()
+            self.redraw()
+            self.status.set(tr("msg.wand.klick" if wz_e == "wand" else "msg.raum.klick"))
             return
         if self._griff_drag_el is not None:
             self._griff_drag_el = None
@@ -2715,8 +2699,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self._viewport_modus_anzeige_aktualisieren()
         self.auswahl = []
         self.redraw()
-        de = SPRACHE["aktuell"] == "de"
-        self.status.set("Zurück zur Auswahl." if de else "Back to selection.")
+        self.status.set(tr("txt.0013"))
 
     def _werkzeug_gewechselt(self):
         self._werkzeug_gewechselt_2d()
@@ -2752,8 +2735,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             self._break_el = None
             self._break_p1 = None
         self._update_eingabe_hinweis()
-        de = SPRACHE["aktuell"] == "de"
-        self.status.set(("Werkzeug: " if de else "Tool: ")
+        self.status.set((tr("txt.0073"))
                         + self.aktives_werkzeug.get())
         wz = self.aktives_werkzeug.get()
         if wz in ELEKTRO_WERKZEUGE:
@@ -2907,9 +2889,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         if self._ist_layout() and self._aktiver_viewport is not None:
             vp = self._aktiver_viewport
             if vp.gesperrt:
-                de = SPRACHE["aktuell"] == "de"
-                self.status.set("Viewport-Maßstab ist gesperrt." if de
-                                else "Viewport scale is locked.")
+                self.status.set(tr("txt.0068"))
                 return
             mx_mm, my_mm = self.px_to_mm(event.x, event.y)
             if not (vp.x <= mx_mm <= vp.x + vp.breite and
@@ -3052,8 +3032,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         if self._paste_aktiv:
             self._paste_abbrechen()
             self.redraw()
-            de = SPRACHE["aktuell"] == "de"
-            self.status.set("Einfügen abgebrochen." if de else "Paste cancelled.")
+            self.status.set(tr("txt.0071"))
             return
         if self._warte_auf_blockpunkt:
             self._warte_auf_blockpunkt = False
@@ -3061,14 +3040,12 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             self._clear_temp()
             self.redraw()
             self._update_eingabe_hinweis()
-            de = SPRACHE["aktuell"] == "de"
-            self.status.set("Einfügen abgebrochen." if de else "Paste cancelled.")
+            self.status.set(tr("txt.0071"))
             return
         if self._cmd_pending is not None:
             self._cmd_pending = None
             self._update_eingabe_hinweis()
-            de = SPRACHE["aktuell"] == "de"
-            self.status.set("Abgebrochen." if de else "Cancelled.")
+            self.status.set(tr("txt.0074"))
             return
         if self.aktives_werkzeug.get() == "stutzen":
             if self._trim_status == "grenzen":
@@ -3106,8 +3083,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             self._pts = []
             self.letzter_punkt = None
             self.redraw()
-            de = SPRACHE["aktuell"] == "de"
-            self.status.set("Abgebrochen." if de else "Cancelled.")
+            self.status.set(tr("txt.0074"))
             return
         if self._vp_aktion != "none":
             return
@@ -3158,38 +3134,26 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                     activebackground=FARBEN["cyan"],
                     activeforeground=FARBEN["bg_dunkel"])
         menu = tk.Menu(self.root, **stil)
-        de = SPRACHE["aktuell"] == "de"
-        menu.add_command(label=("Aktivieren (Modell bearbeiten)" if de
-                                else "Activate (edit model)"),
+        menu.add_command(label=(tr("txt.0075")),
                          command=lambda: self._vp_aktivieren(vp))
         menu.add_separator()
-        for typ, text_de, text_en in (
-                ("move", "Verschieben (Basispunkt)", "Move (base point)"),
-                ("copy", "Kopieren (Basispunkt, mehrfach)", "Copy (base point, multiple)"),
-                ("copybase", "Kopieren mit Basispunkt (COPYBASE)", "Copy with base point (COPYBASE)")):
-            menu.add_command(label=text_de if de else text_en,
+        for typ, text_key in (("move", "txt.0182"), ("copy", "txt.0183"), ("copybase", "txt.0184")):
+            menu.add_command(label=tr(text_key),
                              command=lambda t=typ: self._vp_op_start(vp, t))
         menu.add_separator()
         ms = tk.Menu(menu, **stil)
         for m in MASSSTAEBE:
             ms.add_command(label=m, command=lambda m=m: self._vp_massstab_setzen(vp, m))
-        menu.add_cascade(label=(f"Maßstab setzen (aktuell {massstab_text(vp.zoom)})" if de
-                                else f"Set scale (current {massstab_text(vp.zoom)})"), menu=ms)
-        menu.add_command(label=(("Maßstab " + ("entsperren" if vp.gesperrt else "sperren"))
-                                if de else
-                                ("Scale " + ("unlock" if vp.gesperrt else "lock"))),
+        menu.add_cascade(label=(tr("txt.0076", p0=massstab_text(vp.zoom))), menu=ms)
+        menu.add_command(label=((tr("txt.0249") + (tr("txt.0270") if vp.gesperrt else tr("txt.0271")))),
                          command=lambda: self._vp_sperre_umschalten(vp))
-        menu.add_command(label=("Ausschnitt per Fenster (exakt, Objektfang)" if de
-                                else "View by window (exact, object snap)"),
+        menu.add_command(label=(tr("txt.0077")),
                          command=lambda: self._vp_fenster_start(vp, False))
-        menu.add_command(label=("Ausschnitt per Fenster + Normmaßstab" if de
-                                else "View by window + standard scale"),
+        menu.add_command(label=(tr("txt.0078")),
                          command=lambda: self._vp_fenster_start(vp, True))
-        menu.add_command(label=("Ansicht an Modell anpassen (Auto-Fit)" if de
-                                else "Fit view to model (auto-fit)"),
+        menu.add_command(label=(tr("txt.0079")),
                          command=lambda: self._vp_auto_fit(vp))
-        menu.add_command(label=("An Auswahl ausrichten" if de
-                                else "Align to selection"),
+        menu.add_command(label=(tr("txt.0080")),
                          command=lambda: self._vp_an_objekt(vp))
         menu.add_separator()
         m3 = tk.Menu(menu, **stil)
@@ -3207,9 +3171,9 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         m3.add_command(label=tr("d3.vp.aus"), command=lambda: self._vp_3d_aus(vp))
         menu.add_cascade(label=tr("d3.vp.menue"), menu=m3)
         menu.add_separator()
-        menu.add_command(label=("Eigenschaften..." if de else "Properties..."),
+        menu.add_command(label=(tr("txt.0081")),
                          command=lambda: self._vp_eigenschaften(vp))
-        menu.add_command(label=("Löschen" if de else "Delete"),
+        menu.add_command(label=(tr("txt.0082")),
                          command=lambda: self._vp_loeschen(vp))
         try:
             menu.tk_popup(event.x_root, event.y_root)
@@ -3230,11 +3194,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self._vp_modus_var.set("viewport")
         self.redraw()
         self._viewport_modus_anzeige_aktualisieren()
-        de = SPRACHE["aktuell"] == "de"
-        self.status.set(("Viewport aktiviert. Doppelklick in einen anderen "
-                         "Viewport wechselt, ESC oder Layout-Ansicht verlässt." if de else
-                         "Viewport activated. Double click into another viewport "
-                         "to switch, ESC or Layout view to leave."))
+        self.status.set((tr("txt.0014")))
 
     def _vp_eigenschaften(self, vp):
         vorher = self._zustand()
@@ -3245,10 +3205,9 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             self._viewport_modus_anzeige_aktualisieren()
 
     def _vp_loeschen(self, vp):
-        de = SPRACHE["aktuell"] == "de"
         if messagebox.askyesno(
-                ("Viewport löschen" if de else "Delete viewport"),
-                ("Diesen Viewport entfernen?" if de else "Remove this viewport?")):
+                (tr("txt.0015")),
+                (tr("txt.0016"))):
             self._snapshot()
             if vp in self.layout_elemente:
                 self.layout_elemente.remove(vp)
@@ -3258,11 +3217,10 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             self._viewport_modus_anzeige_aktualisieren()
 
     def _vp_auto_fit(self, vp):
-        de = SPRACHE["aktuell"] == "de"
         if not self.elemente:
             messagebox.showinfo(
-                ("Auto-Fit" if de else "Auto-fit"),
-                ("Keine Modellelemente vorhanden." if de else "No model elements found."))
+                (tr("txt.0083")),
+                (tr("txt.0084")))
             return
         self._snapshot()
         xs, ys = [], []
@@ -3281,19 +3239,17 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         if bw > 1e-6 and bh > 1e-6:
             vp.zoom = min((vp.breite * 0.9) / bw, (vp.hoehe * 0.9) / bh)
         self.redraw()
-        self.status.set(("Auto-Fit angewandt." if de else "Auto-fit applied."))
+        self.status.set((tr("txt.0017")))
 
     def _vp_an_objekt(self, vp):
-        de = SPRACHE["aktuell"] == "de"
         if not self.elemente:
             return
         objekte = ([el for el in self.auswahl if el in self.elemente]
                    if self.auswahl else self.elemente)
         if not objekte:
             messagebox.showinfo(
-                ("An Objekt ausrichten" if de else "Align to object"),
-                ("Bitte Element(e) im Modell auswählen." if de
-                 else "Please select element(s) in the model."))
+                (tr("txt.0085")),
+                (tr("txt.0086")))
             return
         self._snapshot()
         xs, ys = [], []
@@ -3310,8 +3266,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         if bw > 1e-6 and bh > 1e-6:
             vp.zoom = min((vp.breite * 0.95) / bw, (vp.hoehe * 0.95) / bh)
         self.redraw()
-        self.status.set(("Viewport an Auswahl ausgerichtet." if de
-                         else "Viewport aligned to selection."))
+        self.status.set((tr("txt.0018")))
 
     # --------------------------------------------------------
     # Object snap
@@ -3667,14 +3622,8 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         if self._paste_aktiv:
             self._paste_vorschau_aktualisieren(event.x, event.y)
             ziel = self._paste_maus_mm
-            de = SPRACHE["aktuell"] == "de"
             self.status.set(
-                (f"[EINFÜGEN]  X = {ziel[0] / einh:8.2f} {unit}   "
-                 f"Y = {ziel[1] / einh:8.2f} {unit}   |   "
-                 f"Klick = platzieren, ESC = abbrechen" if de else
-                 f"[PASTE]  X = {ziel[0] / einh:8.2f} {unit}   "
-                 f"Y = {ziel[1] / einh:8.2f} {unit}   |   "
-                 f"Click = place, ESC = cancel"))
+                (tr("txt.0087", p0=ziel[0] / einh, p1=unit, p2=ziel[1] / einh)))
             return
         if getattr(self, "_mess", None) is not None:
             self._mess_bewegt(event)
@@ -3692,34 +3641,20 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         if self._warte_auf_blockpunkt:
             pt = self._eingabepunkt(event)
             self._block_vorschau(pt)
-            de = SPRACHE["aktuell"] == "de"
             self.status.set(
-                (f"Block-Einfügepunkt: X = {pt[0] / einh:.2f}  "
-                 f"Y = {pt[1] / einh:.2f}  |  Klick = platzieren, "
-                 "ESC = abbrechen" if de else
-                 f"Block insertion point: X = {pt[0] / einh:.2f}  "
-                 f"Y = {pt[1] / einh:.2f}  |  Click = place, ESC = cancel"))
+                (tr("txt.0088", p0=pt[0] / einh, p1=pt[1] / einh)))
             self._fadenkreuz(event.x, event.y)
             return
         if self._block_erzeuge_auswahl is not None:
             pt = self._eingabepunkt(event)
-            de = SPRACHE["aktuell"] == "de"
             self.status.set(
-                (f"Block-Basispunkt: X = {pt[0] / einh:.2f}  "
-                 f"Y = {pt[1] / einh:.2f}  |  Klick = bestätigen, "
-                 "ESC = abbrechen" if de else
-                 f"Block base point: X = {pt[0] / einh:.2f}  "
-                 f"Y = {pt[1] / einh:.2f}  |  Click = confirm, ESC = cancel"))
+                (tr("txt.0089", p0=pt[0] / einh, p1=pt[1] / einh)))
             self._fadenkreuz(event.x, event.y)
             return
         if self._warte_auf_basispunkt:
             x, y = self._eingabepunkt(event)
-            de = SPRACHE["aktuell"] == "de"
             self.status.set(
-                (f"Basispunkt setzen: X = {x / einh:.2f}  Y = {y / einh:.2f}  |  "
-                 "Klick = bestätigen, ESC = abbrechen" if de else
-                 f"Set base point: X = {x / einh:.2f}  Y = {y / einh:.2f}  |  "
-                 "Click = confirm, ESC = cancel"))
+                (tr("txt.0090", p0=x / einh, p1=y / einh)))
             self._fadenkreuz(event.x, event.y)
             return
         if self._drag_modus == "auswahl_rechteck" and self._auswahl_rechteck_start:
@@ -3748,29 +3683,23 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                                or self.aktuelle_polylinie):
             self._werkzeug_vorschau(pt)
         kind, vp = self._ctx()
-        de = SPRACHE["aktuell"] == "de"
         modus_info = ""
         if kind == "vp":
             modus_info = (
-                (f"   |   [VIEWPORT AKTIV  {massstab_text(vp.zoom)}"
-                 f"{' gesperrt' if vp.gesperrt else ''}]" if de else
-                 f"   |   [VIEWPORT ACTIVE  {massstab_text(vp.zoom)}"
-                 f"{' locked' if vp.gesperrt else ''}]"))
+                (tr("txt.0019", p0=massstab_text(vp.zoom), p1=' gesperrt' if vp.gesperrt else '', p2=' locked' if vp.gesperrt else '')))
         elif kind == "layout" and self._viewport_unter_maus(event) is not None:
             modus_info = (
-                ("   |   [Viewport: Rechtsklick für Menü, Doppelklick = aktivieren]"
-                 if de else
-                 "   |   [Viewport: right-click for menu, double-click = activate]"))
+                (tr("txt.0091")))
         ansicht_name = (self.layout.name if self._ist_layout() else
-                        ("Modell" if de else "Model"))
+                        (tr("txt.0020")))
         self.status.set(
             f"[{ansicht_name}]  "
             f"X = {pt[0] / einh:8.2f} {unit}   Y = {pt[1] / einh:8.2f} {unit}   |   "
             f"Zoom {self.view['zoom']:.2f}   |   "
-            f"{'Layer' if de else 'Layer'}: {self.aktiver_layer.get()}   |   "
-            f"{'Auswahl' if de else 'Selected'}: {len(self.auswahl)}   |   "
+            f"{'Layer'}: {self.aktiver_layer.get()}   |   "
+            f"{tr('txt.0195')}: {len(self.auswahl)}   |   "
             f"OFang: {'AN' if self.osnap.get() else 'AUS'}   "
-            f"{'Fang' if de else 'Snap'}: {'AN' if self.grid_snap.get() else 'AUS'} "
+            f"{tr('txt.0196')}: {'AN' if self.grid_snap.get() else 'AUS'} "
             f"({self._zahl(self.fang_mm, 5):g})   "
             f"Ortho: {'AN' if self.ortho.get() else 'AUS'}" + modus_info)
 
@@ -3781,7 +3710,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         d = self.block_bibliothek.get(self._block_einfuege_name)
         if d is None:
             return
-        ref = BlockReferenz(pt[0], pt[1], d.name, d.elemente,
+        ref = BlockReferenz(pt[0], pt[1], d.name, d.elemente, varianten=d.varianten,
                             layer=self._block_layer(d.elemente),
                             farbe=self.zeichenfarbe,
                             linientyp=self.linientyp.get(),
@@ -3945,9 +3874,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self.auswahl = []
         n_v, n_l = verbindungen_bereinigen(liste, vorher, vorher_l)
         self.redraw()
-        de = SPRACHE["aktuell"] == "de"
-        msg = (f"{n} Element(e) gelöscht." if de
-               else f"{n} element(s) deleted.")
+        msg = (tr("txt.0001", p0=n))
         if n_v or n_l:
             msg += "  " + tr("msg.elektro.bereinigt", n=n_v, l=n_l)
         self.status.set(msg)
@@ -3958,9 +3885,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                         if self.layers.get(el.layer) is None or
                         self.layers.get(el.layer).sichtbar]
         self.redraw()
-        de = SPRACHE["aktuell"] == "de"
-        self.status.set((f"{len(self.auswahl)} Element(e) markiert." if de
-                         else f"{len(self.auswahl)} element(s) selected."))
+        self.status.set((tr("txt.0021", p0=len(self.auswahl))))
 
     def _zeichne_auswahl_rechteck(self, event):
         if not self._auswahl_rechteck_start:
@@ -4195,9 +4120,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             else:
                 self.auswahl.append(el)
             self.redraw()
-            de = SPRACHE["aktuell"] == "de"
-            self.status.set((f"{len(self.auswahl)} Element(e) markiert." if de
-                             else f"{len(self.auswahl)} element(s) selected."))
+            self.status.set((tr("txt.0021", p0=len(self.auswahl))))
             return
         self.auswahl_rechteck_start(event)
 
@@ -4284,7 +4207,6 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
     # Trim (TRIM)
     # --------------------------------------------------------
     def _trim_grenzen_bestaetigen(self):
-        de = SPRACHE["aktuell"] == "de"
         n = len(self._trim_grenzen)
         if n == 0:
             self._trim_grenzen = [el for el in self._aktuelle_elemente_liste()
@@ -4429,7 +4351,6 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         return ergebnis
 
     def _trim_klick(self, pt):
-        de = SPRACHE["aktuell"] == "de"
         if self._trim_status == "grenzen":
             tol_mm = 8 / self._ctx_skala()
             el = self._element_auf_punkt_snap(pt[0], pt[1], tol_mm)
@@ -4452,7 +4373,6 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             return
 
     def _trim_anwenden(self, ziel, klick_pt):
-        de = SPRACHE["aktuell"] == "de"
         schnitte = self._schnitte_mit_grenzen(ziel, self._trim_grenzen,
                                              1e-3)
         if not schnitte:
@@ -4547,7 +4467,6 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
     # Break (BREAK)
     # --------------------------------------------------------
     def _break_klick(self, pt):
-        de = SPRACHE["aktuell"] == "de"
         if self._break_status == "objekt":
             tol_mm = 8 / self._ctx_skala()
             el = self._element_auf_punkt_snap(pt[0], pt[1], tol_mm)
@@ -4570,7 +4489,6 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             return
 
     def _break_anwenden(self, ziel, p1, p2):
-        de = SPRACHE["aktuell"] == "de"
         liste = self._aktuelle_elemente_liste()
         if ziel not in liste:
             self._break_abbrechen()
@@ -4666,10 +4584,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
     def _click_viewport_aufziehen(self, x_mm, y_mm):
         if self.letzter_punkt is None:
             self.letzter_punkt = (x_mm, y_mm)
-            de = SPRACHE["aktuell"] == "de"
-            self.status.set(("Viewport: Gegenüberliegende Ecke setzen "
-                             "(Objektfang aktiv)." if de else
-                             "Viewport: set opposite corner (object snap active)."))
+            self.status.set((tr("txt.0092")))
             return
         x1, y1 = self.letzter_punkt
         bw, bh = abs(x_mm - x1), abs(y_mm - y1)
@@ -4688,12 +4603,8 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self._viewport_modus = False
         self._clear_temp()
         self.redraw()
-        de = SPRACHE["aktuell"] == "de"
         self.status.set(
-            (f"Viewport platziert (Maßstab {massstab_text(zoom)}). Rechtsklick "
-             "auf den Viewport für Maßstab/Ausschnitt." if de else
-             f"Viewport placed (scale {massstab_text(zoom)}). Right-click the "
-             "viewport for scale/view."))
+            (tr("txt.0022", p0=massstab_text(zoom))))
 
     def _berechne_fit_zoom(self, vp_bw, vp_bh):
         if not self.elemente:
@@ -4837,9 +4748,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             Text(x_mm, y_mm, inhalt, hoehe, winkel, schriftart,
                  einfuegepunkt=einfuegepunkt, **daten))
         self.redraw()
-        de = SPRACHE["aktuell"] == "de"
-        self.status.set((f"Text eingefügt: '{inhalt[:30]}'" if de
-                         else f"Text inserted: '{inhalt[:30]}'"))
+        self.status.set((tr("txt.0023", p0=inhalt[:30])))
 
     def _modell_zentrum(self):
         if not self.elemente:
@@ -4936,12 +4845,8 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             for t in treffer:
                 if t not in self.auswahl:
                     self.auswahl.append(t)
-            de = SPRACHE["aktuell"] == "de"
             self.status.set(
-                (f"{len(self.auswahl)} Element(e) markiert "
-                 f"({'komplett' if richtung == 'links' else 'berührt'})." if de
-                 else f"{len(self.auswahl)} element(s) selected "
-                 f"({'fully' if richtung == 'links' else 'crossing'})."))
+                (tr("txt.0093", p0=len(self.auswahl), p1='komplett' if richtung == 'links' else 'berührt', p2='fully' if richtung == 'links' else 'crossing')))
         self._auswahl_rechteck_start = None
         self._drag_modus = None
         self._auswahl_richtung = None
@@ -5462,24 +5367,21 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
 
     def import_bild(self):
         """Inserts a raster image (PNG, JPG, ...) as a scalable element."""
-        de = SPRACHE["aktuell"] == "de"
-        titel = "Bild" if de else "Image"
+        titel = tr("txt.0002")
         try:
             from katiecad.fileio import bild_import
         except Exception as ex:
             messagebox.showwarning(titel, str(ex))
             return
         if not bild_import.PIL_OK:
-            messagebox.showwarning(titel, "Pillow nicht installiert:  pip install Pillow"
-                                   if de else "Pillow is not installed:  pip install Pillow")
+            messagebox.showwarning(titel, tr("txt.0094"))
             return
         if self._ist_layout():
-            self.status.set("Bitte in die Modell-Ansicht wechseln." if de
-                            else "Please switch to model view.")
+            self.status.set(tr("txt.0095"))
             return
         pfad = filedialog.askopenfilename(
-            filetypes=[(("Bilder" if de else "Images"), bild_import.ENDUNGEN),
-                       (("Alle Dateien" if de else "All files"), "*.*")])
+            filetypes=[((tr("txt.0197")), bild_import.ENDUNGEN),
+                       ((tr("txt.0198")), "*.*")])
         if not pfad:
             return
         try:
@@ -5488,8 +5390,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             messagebox.showerror(titel, str(ex))
             return
         breite = simpledialog.askfloat(
-            titel, ("Breite des Bildes in mm (die Höhe folgt dem Seitenverhältnis):" if de
-                    else "Width of the image in mm (height follows the aspect ratio):"),
+            titel, (tr("txt.0024")),
             initialvalue=100.0, minvalue=0.1, maxvalue=100000.0, parent=self.root)
         if breite is None:
             return
@@ -5505,10 +5406,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self._ziel_liste().append(el)
         self.auswahl = [el]
         self.redraw()
-        self.status.set((f"Bild eingefügt ({b['pw']} x {b['ph']} Pixel). Größe: gelbe Ecke ziehen "
-                         f"oder Skalieren-Befehl." if de else
-                         f"Image inserted ({b['pw']} x {b['ph']} px). Resize: drag the yellow "
-                         f"corner or use Scale."))
+        self.status.set((tr("txt.0025", p0=b['pw'], p1=b['ph'])))
 
     def _zeichne_vp(self, el, tags, tf, skala, clip, stil):
         """Connection point: circle only in the model, label everywhere."""
@@ -5930,16 +5828,12 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             return
         self._viewport_modus = True
         self.letzter_punkt = None
-        de = SPRACHE["aktuell"] == "de"
-        self.status.set(("Viewport-Modus: Rechteck im Layout aufziehen." if de
-                         else "Viewport mode: drag a rectangle in the layout."))
+        self.status.set((tr("txt.0026")))
 
     def blatt_leeren(self):
-        de = SPRACHE["aktuell"] == "de"
         if messagebox.askyesno(
-                ("Blatt leeren" if de else "Clear sheet"),
-                ("Alle Layout-Elemente entfernen?" if de
-                 else "Remove all layout elements?")):
+                (tr("txt.0027")),
+                (tr("txt.0028"))):
             self._snapshot()
             self.layouts[self.aktives_layout].elemente = []
             self._aktiver_viewport = None
@@ -6121,11 +6015,9 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
     def log_oeffnen(self):
         """Opens the program log in the system's text editor."""
         from katiecad.common import logbuch
-        de = SPRACHE["aktuell"] == "de"
         pf = logbuch.pfad()
         if not pf or not os.path.exists(pf):
-            messagebox.showinfo("Log", ("Es gibt noch keine Log-Datei." if de
-                                        else "There is no log file yet."),
+            messagebox.showinfo("Log", (tr("txt.0096")),
                                 parent=self.root)
             return
         try:
@@ -6137,36 +6029,24 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                 subprocess.run(["xdg-open", pf], check=True)
         except Exception as ex:
             messagebox.showwarning(
-                "Log", (f"Die Log-Datei konnte nicht geöffnet werden ({ex}).\n"
-                        f"Sie liegt hier:\n{pf}" if de else
-                        f"The log file could not be opened ({ex}).\n"
-                        f"It is located here:\n{pf}"), parent=self.root)
+                "Log", (tr("txt.0153", p0=ex, p1=pf)), parent=self.root)
 
     def neu(self):
         """File > New: closes the current drawing and starts a new, empty single drawing.
         With an open project the WHOLE project is closed (sheets are managed in the side bar
         only). It never happens without asking."""
-        de = SPRACHE["aktuell"] == "de"
         p = self.projekt
-        titel = "Neue Zeichnung" if de else "New drawing"
+        titel = tr("txt.0003")
         if p is not None:
             if self._dirty:
-                frage = (f"Das Projekt \u201e{p.name}\u201c hat nicht gespeicherte Änderungen.\n\n"
-                         f"Möchten Sie die Änderungen im Projekt speichern? Danach wird das "
-                         f"gesamte Projekt geschlossen und eine neue Zeichnung angelegt." if de else
-                         f"The project \u201c{p.name}\u201d has unsaved changes.\n\nDo you want to save "
-                         f"the changes in the project? Afterwards the whole project is closed and "
-                         f"a new drawing is created.")
+                frage = (tr("txt.0097", p0=p.name))
                 antwort = messagebox.askyesnocancel(titel, frage, parent=self.root)
                 if antwort is None:
                     return
                 if antwort and not self.projekt_speichern():
                     return
             else:
-                frage = (f"Das Projekt \u201e{p.name}\u201c wird geschlossen und eine neue, leere "
-                         f"Zeichnung angelegt.\n\nFortfahren?" if de else
-                         f"The project \u201c{p.name}\u201d is closed and a new, empty drawing is "
-                         f"created.\n\nContinue?")
+                frage = (tr("txt.0098", p0=p.name))
                 if not messagebox.askyesno(titel, frage, default=messagebox.NO, parent=self.root):
                     return
             self._projekt_zuruecksetzen()
@@ -6175,10 +6055,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         if self._dirty:
             antwort = messagebox.askyesnocancel(
                 titel,
-                ("Die Zeichnung wurde geändert.\n\nMöchten Sie die Änderungen speichern, "
-                 "bevor eine neue Zeichnung angelegt wird?" if de else
-                 "The drawing has been modified.\n\nDo you want to save the changes "
-                 "before a new drawing is created?"), parent=self.root)
+                (tr("txt.0099")), parent=self.root)
             if antwort is None:
                 return
             if antwort:
@@ -6186,10 +6063,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                     return
         elif not messagebox.askyesno(
                 titel,
-                ("Die aktuelle Zeichnung wird geschlossen und eine neue, leere Zeichnung "
-                 "angelegt.\n\nFortfahren?" if de else
-                 "The current drawing is closed and a new, empty drawing is created."
-                 "\n\nContinue?"),
+                (tr("txt.0154")),
                 default=messagebox.NO, parent=self.root):
             return
         self.elemente = []
@@ -6223,11 +6097,10 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
     def speichern(self):
         if self.projekt is not None:
             return self.projekt_speichern()
-        de = SPRACHE["aktuell"] == "de"
         pfad = filedialog.asksaveasfilename(
             defaultextension=".cadjson",
-            filetypes=[("CAD-Datei" if de else "CAD file", "*.cadjson"),
-                       ("Alle Dateien" if de else "All files", "*.*")])
+            filetypes=[(tr("txt.0199"), "*.cadjson"),
+                       (tr("txt.0198"), "*.*")])
         if not pfad:
             return False
         daten = self._zeichnung_daten()
@@ -6238,14 +6111,13 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             messagebox.showerror(tr("msg.speichern_fehlgeschlagen"), str(e))
             return False
         self._mark_clean()
-        self.status.set((f"Gespeichert: {pfad}" if de else f"Saved: {pfad}"))
+        self.status.set((tr("txt.0029", p0=pfad)))
         return True
 
     def oeffnen(self):
-        de = SPRACHE["aktuell"] == "de"
         if self._dirty:
             antwort = messagebox.askyesnocancel(
-                ("Öffnen" if de else "Open"), self._speichern_frage_text("oeffnen"),
+                (tr("txt.0100")), self._speichern_frage_text("oeffnen"),
                 parent=self.root)
             if antwort is None:
                 return
@@ -6257,8 +6129,8 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                 parent=self.root):
             return
         pfad = filedialog.askopenfilename(
-            filetypes=[("CAD-Datei" if de else "CAD file", "*.cadjson"),
-                       ("Alle Dateien" if de else "All files", "*.*")])
+            filetypes=[(tr("txt.0199"), "*.cadjson"),
+                       (tr("txt.0198"), "*.*")])
         if not pfad:
             return
         try:
@@ -6270,7 +6142,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self._projekt_fuer_einzeldatei_schliessen()
         self._zeichnung_anwenden(daten)
         self._undo_reset()
-        self.status.set((f"Geöffnet: {pfad}" if de else f"Opened: {pfad}"))
+        self.status.set((tr("txt.0030", p0=pfad)))
 
     def _dict_zu_element(self, d):
         d = dict(d)
@@ -6323,7 +6195,13 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                     kind = self._dict_zu_element(kd)
                     if kind is not None:
                         kinder.append(kind)
-                return BlockReferenz(elemente=kinder, **d)
+                var = []
+                for vd in d.pop("varianten", None) or []:
+                    ve = [k for k in (self._dict_zu_element(x)
+                                      for x in vd.get("elemente", [])) if k is not None]
+                    if ve:
+                        var.append((vd.get("name", ""), ve))
+                return BlockReferenz(elemente=kinder, varianten=var, **d)
         except Exception as e:
             print(f"Fehler beim Laden: {e} - {d}")
         return None
@@ -6347,16 +6225,15 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self._export_cad("dwg")
 
     def _export_cad(self, art):
-        de = SPRACHE["aktuell"] == "de"
         titel = art.upper()
         if not EZDXF_VERFUEGBAR:
             messagebox.showwarning(titel,
-                ("ezdxf nicht installiert." if de else "ezdxf is not installed."))
+                (tr("txt.0101")))
             return
         pfad = filedialog.asksaveasfilename(
             defaultextension="." + art,
-            filetypes=[((titel + "-Datei") if de else (titel + " file"), "*." + art),
-                       ("Alle Dateien" if de else "All files", "*.*")])
+            filetypes=[((titel + tr("txt.0280")), "*." + art),
+                       (tr("txt.0198"), "*.*")])
         if not pfad:
             return
         try:
@@ -6367,11 +6244,10 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                 dxf_doc_als_dwg_speichern(doc, pfad)
             else:
                 doc.saveas(pfad)
-            self.status.set((f"{titel} exportiert: {pfad}" if de
-                             else f"{titel} exported: {pfad}"))
+            self.status.set((tr("txt.0102", p0=titel, p1=pfad)))
         except Exception as e:
             messagebox.showerror(titel,
-                (f"Fehler:\n{e}" if de else f"Error:\n{e}"))
+                (tr("txt.0155", p0=e)))
 
     def _hex_zu_aci(self, hexfarbe):
         mapping = {"#000000": 7, "#ffffff": 7, "#ff0000": 1, "#ffff00": 2,
@@ -6503,18 +6379,16 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
 
     def _cad_import(self, art):
         """Common import for DXF and DWG (art = 'dxf' | 'dwg')."""
-        de = SPRACHE["aktuell"] == "de"
         titel = art.upper()
         if not CADIMPORT_VERFUEGBAR or not EZDXF_VERFUEGBAR:
             messagebox.showwarning(titel,
-                ("ezdxf nicht installiert:  pip install ezdxf" if de
-                 else "ezdxf is not installed:  pip install ezdxf"))
+                (tr("txt.0103")))
             return
         pfad = filedialog.askopenfilename(
             filetypes=[("DXF / DWG", "*.dxf *.dwg"),
-                       (("DXF-Datei" if de else "DXF file"), "*.dxf"),
-                       (("DWG-Datei" if de else "DWG file"), "*.dwg"),
-                       (("Alle Dateien" if de else "All files"), "*.*")])
+                       ((tr("txt.0200")), "*.dxf"),
+                       ((tr("txt.0201")), "*.dwg"),
+                       ((tr("txt.0198")), "*.*")])
         if not pfad:
             return
         try:
@@ -6526,24 +6400,21 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             erg = cadimport.importiere_datei(pfad, self.layers)
             if not erg.elemente:
                 messagebox.showwarning(titel,
-                    ("Es konnten keine Elemente importiert werden.\n"
-                     if de else "No elements could be imported.\n") +
-                    self._import_bericht(erg, de))
+                    (tr("txt.0202")) +
+                    self._import_bericht(erg))
                 return
             self._snapshot()
             self.elemente.extend(erg.elemente)
             self.layer_cb.config(values=list(self.layers.keys()))
             self.zoom_grenzen()
-            msg = (f"{titel} importiert ({len(erg.elemente)} Elemente): {pfad}"
-                   if de else
-                   f"{titel} imported ({len(erg.elemente)} elements): {pfad}")
+            msg = (tr("txt.0031", p0=titel, p1=len(erg.elemente), p2=pfad))
             self.status.set(msg)
             if erg.uebersprungen or erg.fehler or erg.hinweise:
                 messagebox.showinfo(titel, msg + "\n\n" +
-                                    self._import_bericht(erg, de))
+                                    self._import_bericht(erg))
         except Exception as e:
             messagebox.showerror(titel,
-                (f"Fehler beim Import:\n{e}" if de else f"Import error:\n{e}"))
+                (tr("txt.0156", p0=e)))
         finally:
             try:
                 self.root.config(cursor="")
@@ -6551,21 +6422,18 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                 pass
 
     @staticmethod
-    def _import_bericht(erg, de):
+    def _import_bericht(erg):
         z = []
         if erg.quelle:
-            z.append(("Quelle: " if de else "Source: ") + erg.quelle)
+            z.append((tr("txt.0157")) + erg.quelle)
         if erg.faktor != 1.0:
-            z.append((f"Einheiten automatisch nach mm umgerechnet (x{erg.faktor:g})"
-                      if de else f"Units converted to mm (x{erg.faktor:g})"))
+            z.append((tr("txt.0104", p0=erg.faktor)))
         if erg.uebersprungen:
-            z.append(("Nicht unterstützt (übersprungen): " if de
-                      else "Unsupported (skipped): ") +
+            z.append((tr("txt.0158")) +
                      ", ".join(f"{k} x{v}" for k, v in
                                erg.uebersprungen.most_common()))
         if erg.fehler:
-            z.append((f"Fehlerhafte Elemente: {erg.fehler}" if de
-                      else f"Faulty elements: {erg.fehler}"))
+            z.append((tr("txt.0105", p0=erg.fehler)))
         z += erg.hinweise
         return "\n".join(z)
 
@@ -6578,44 +6446,37 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
     def import_pdf(self):
         """Imports one page of a PDF as vector geometry; PDF layers (optional
         content groups) become KatieCAD layers."""
-        de = SPRACHE["aktuell"] == "de"
         titel = "PDF"
         try:
             from katiecad.fileio import pdf_import
         except Exception as ex:
-            messagebox.showwarning(titel, (f"PDF-Import nicht verfügbar: {ex}" if de
-                                           else f"PDF import not available: {ex}"))
+            messagebox.showwarning(titel, (tr("txt.0159", p0=ex)))
             return
         if not pdf_import.PYPDF_OK:
-            messagebox.showwarning(titel, ("pypdf nicht installiert:  pip install pypdf"
-                                           if de else "pypdf is not installed:  pip install pypdf"))
+            messagebox.showwarning(titel, (tr("txt.0106")))
             return
         if self._ist_layout():
-            self.status.set("Bitte in die Modell-Ansicht wechseln." if de
-                            else "Please switch to model view.")
+            self.status.set(tr("txt.0095"))
             return
         pfad = filedialog.askopenfilename(
-            filetypes=[(("PDF-Datei" if de else "PDF file"), "*.pdf"),
-                       (("Alle Dateien" if de else "All files"), "*.*")])
+            filetypes=[((tr("txt.0203")), "*.pdf"),
+                       ((tr("txt.0198")), "*.*")])
         if not pfad:
             return
         try:
             n = pdf_import.seitenzahl(pfad)
         except Exception as ex:
-            messagebox.showerror(titel, (f"Die PDF-Datei konnte nicht gelesen werden:\n{ex}"
-                                         if de else f"The PDF could not be read:\n{ex}"))
+            messagebox.showerror(titel, (tr("txt.0160", p0=ex)))
             return
         seite = 1
         if n > 1:
             seite = simpledialog.askinteger(
-                titel, (f"Welche Seite importieren? (1-{n})" if de
-                        else f"Which page to import? (1-{n})"),
+                titel, (tr("txt.0107", p0=n)),
                 initialvalue=1, minvalue=1, maxvalue=n, parent=self.root)
             if seite is None:
                 return
         faktor = simpledialog.askfloat(
-            titel, ("Maßstabsfaktor (1 = Papiergröße, z. B. 50 für einen Plot 1:50):"
-                    if de else "Scale factor (1 = paper size, e.g. 50 for a 1:50 plot):"),
+            titel, (tr("txt.0032")),
             initialvalue=1.0, minvalue=0.001, maxvalue=100000.0, parent=self.root)
         if faktor is None:
             return
@@ -6627,24 +6488,18 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         try:
             erg = pdf_import.importiere_pdf(pfad, self.layers, seite, faktor)
             if not erg.elemente:
-                messagebox.showwarning(titel, ("Es konnten keine Vektordaten importiert werden "
-                                               "(gescanntes PDF?).\n" if de else
-                                               "No vector data could be imported "
-                                               "(scanned PDF?).\n") + self._import_bericht(erg, de))
+                messagebox.showwarning(titel, (tr("txt.0204")) + self._import_bericht(erg))
                 return
             self._snapshot()
             self.elemente.extend(erg.elemente)
             self.layer_cb.config(values=list(self.layers.keys()))
             self.zoom_grenzen()
-            msg = (f"PDF importiert ({len(erg.elemente)} Elemente, {len(erg.neue_layer)} Layer): {pfad}"
-                   if de else
-                   f"PDF imported ({len(erg.elemente)} elements, {len(erg.neue_layer)} layers): {pfad}")
+            msg = (tr("txt.0033", p0=len(erg.elemente), p1=len(erg.neue_layer), p2=pfad))
             self.status.set(msg)
             if erg.uebersprungen or erg.fehler or erg.hinweise:
-                messagebox.showinfo(titel, msg + "\n\n" + self._import_bericht(erg, de))
+                messagebox.showinfo(titel, msg + "\n\n" + self._import_bericht(erg))
         except Exception as e:
-            messagebox.showerror(titel, (f"Fehler beim Import:\n{e}" if de
-                                         else f"Import error:\n{e}"))
+            messagebox.showerror(titel, (tr("txt.0156", p0=e)))
         finally:
             try:
                 self.root.config(cursor="")
@@ -6658,7 +6513,6 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         if self._op is not None:
             self._op_hinweis()
             return
-        de = SPRACHE["aktuell"] == "de"
         w = self.aktives_werkzeug.get()
         n = len(self._pts)
 
@@ -6674,54 +6528,26 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
 
         if w == "auswahl":
             if self._ist_layout():
-                h(text=("Viewport: Klick markiert | Ecke ziehen = skalieren | "
-                        "Mitte ziehen = verschieben | Rechtsklick = Menü" if de else
-                        "Viewport: click = select | drag corner = resize | "
-                        "drag middle = move | right-click = menu"))
+                h(text=(tr("txt.0205")))
             else:
-                h(text=("Element anklicken | Griffe ziehen = ändern | Links-/"
-                        "Rechtsziehen = Fenster-/Kreuzauswahl" if de else
-                        "Click element | drag grips = edit | drag left/right = "
-                        "window/crossing selection"))
+                h(text=(tr("txt.0206")))
         elif w == "linie":
-            h(text=(("Ersten Punkt 'x,y' ODER klicken" if self.letzter_punkt is None
-                     else "Länge / 'L<Winkel' / '@dx,dy' / 'x,y'") if de else
-                    ("First point 'x,y' OR click" if self.letzter_punkt is None
-                     else "Length / 'L<angle' / '@dx,dy' / 'x,y'")))
+            h(text=((tr("txt.0281") if self.letzter_punkt is None else tr("txt.0282"))))
         elif w == "ellipse":
-            h(text=(("Mittelpunkt 'x,y' ODER klicken", "Ende der ersten Achse",
-                     "Länge der zweiten Halbachse")[min(n, 2)] if de else
-                    ("Centre 'x,y' OR click", "End of the first axis",
-                     "Length of the second semi-axis")[min(n, 2)]))
+            h(text=((tr("txt.0283"), tr("txt.0284"), tr("txt.0285"))[min(n, 2)]))
         elif w == "spline":
-            h(text=(("Stützpunkte setzen - Enter/Rechtsklick = fertig, Klick auf "
-                     "Startpunkt = geschlossen") if de else
-                    ("Set support points - Enter/right-click = finish, click on "
-                     "start point = closed")))
+            h(text=(tr("txt.0212")))
         elif w == "kreis":
-            h(text=(("Mittelpunkt 'x,y' ODER klicken" if self.letzter_punkt is None
-                     else ("Radius eingeben" if self.kreis_modus.get() == "radius"
-                           else "Durchmesser eingeben")) if de else
-                    ("Center 'x,y' OR click" if self.letzter_punkt is None
-                     else ("Enter radius" if self.kreis_modus.get() == "radius"
-                           else "Enter diameter"))))
+            h(text=((tr("txt.0286") if self.letzter_punkt is None else (tr("txt.0287") if self.kreis_modus.get() == "radius" else tr("txt.0288")))))
         elif w == "raum":
             h(text=tr("msg.raum.hinweis"))
         elif w == "rechteck":
-            h(text=(("Ersten Eckpunkt 'x,y' ODER klicken" if self.letzter_punkt is None
-                     else "'Breite,Höhe' ODER klicken") if de else
-                    ("First corner 'x,y' OR click" if self.letzter_punkt is None
-                     else "'Width,Height' OR click")))
+            h(text=((tr("txt.0289") if self.letzter_punkt is None else tr("txt.0290"))))
         elif w == "bogen":
             if self.bogen_modus.get() == "mitte":
-                txt = (["Mittelpunkt setzen", "Startpunkt setzen",
-                        "Endpunkt setzen (Richtung folgt der Maus)"] if de else
-                       ["Set center", "Set start point",
-                        "Set end point (direction follows mouse)"])
+                txt = ([tr("txt.0291"), tr("txt.0292"), tr("txt.0293")])
             else:
-                txt = (["Startpunkt setzen", "Punkt auf dem Bogen setzen",
-                        "Endpunkt setzen"] if de else
-                       ["Set start point", "Set point on arc", "Set end point"])
+                txt = ([tr("txt.0292"), tr("txt.0294"), tr("txt.0275")])
             h(text=txt[min(n, 2)])
         elif w == "bemassung":
             if self.bem_art.get() == "kette":
@@ -6729,18 +6555,11 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             elif self.bem_art.get() in ("winkel", "winkel_linien"):
                 h(text=self._winkel_hinweis())
             elif self.bem_art.get() in ("radius", "durchmesser"):
-                h(text=(("Kreis/Bogen anklicken" if n == 0
-                         else "Position der Maßangabe setzen") if de else
-                        ("Click circle/arc" if n == 0
-                         else "Set dimension text position")))
+                h(text=((tr("txt.0295") if n == 0 else tr("txt.0296"))))
             else:
-                h(text=(["1. Messpunkt setzen", "2. Messpunkt setzen",
-                         "Maßlinie positionieren, Klick = fertig"] if de else
-                        ["Set 1st measurement point", "Set 2nd measurement point",
-                         "Position dimension line, click = done"])[min(n, 2)])
+                h(text=([tr("txt.0297"), tr("txt.0298"), tr("txt.0299")])[min(n, 2)])
         elif w == "text":
-            h(text=("Einfügepunkt klicken, dann Text eingeben" if de
-                    else "Click insertion point, then enter text"))
+            h(text=(tr("txt.0218")))
         elif w == "ftext":
             h(text=tr("msg.ftext.platzieren"))
         elif w == "stutzen":
@@ -6831,17 +6650,14 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
     def _parse_xy(self, text, einh):
         teile = text.replace(";", ",").split(",")
         if len(teile) != 2:
-            raise ValueError(("Bitte 'x,y' eingeben" if SPRACHE["aktuell"] == "de"
-                              else "Please enter 'x,y'"))
+            raise ValueError((tr("txt.0256")))
         return float(teile[0].strip()) * einh, float(teile[1].strip()) * einh
 
     def _parse_einzelwert(self, text, einh):
         text = text.strip().replace(",", ".")
         m = re.match(r"^([0-9.+\-eE]+)\s*([a-zA-Z]*)$", text)
         if not m:
-            raise ValueError((f"Ungültiger Wert: {text!r}"
-                              if SPRACHE["aktuell"] == "de"
-                              else f"Invalid value: {text!r}"))
+            raise ValueError((tr("txt.0257", p0=text)))
         wert = float(m.group(1))
         suffix = m.group(2).lower()
         if suffix in EINHEITEN:
@@ -6885,9 +6701,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             return
         teile = [t for t in re.split(r"[,;\t]+|\s{2,}", text.strip()) if t.strip()]
         if len(teile) != 2:
-            raise ValueError(("Bitte 'Breite,Höhe' eingeben"
-                              if SPRACHE["aktuell"] == "de"
-                              else "Please enter 'Width,Height'"))
+            raise ValueError((tr("txt.0258")))
         bw = self._parse_einzelwert(teile[0], einh)
         bh = self._parse_einzelwert(teile[1], einh)
         x1, y1 = self.letzter_punkt
@@ -6931,8 +6745,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         if len(teile) == 2:
             return (self._parse_einzelwert(teile[0], einh),
                     self._parse_einzelwert(teile[1], einh))
-        raise ValueError(("Format nicht erkannt" if SPRACHE["aktuell"] == "de"
-                          else "Format not recognized"))
+        raise ValueError((tr("txt.0253")))
 
     def _eingabe_abbrechen(self):
         self.eingabe_var.set("")
@@ -7063,9 +6876,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
 
     def suchen_ersetzen(self):
         if self._ist_layout():
-            self.status.set("Suchen und Ersetzen gilt für die Zeichnung (Modell)."
-                            if SPRACHE["aktuell"] == "de" else
-                            "Find and replace works on the drawing (model).")
+            self.status.set(tr("txt.0259"))
             return
         alt = getattr(self, "_such_dialog", None)
         try:
@@ -7082,6 +6893,38 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         for el in (self.elemente if elemente is None else elemente):
             if getattr(el, "layer", None) in ELEKTRO_LAYER:
                 self._elektro_layer(el.layer)
+
+    def _block_layer_sicherstellen(self, ref_layer, d):
+        """Layers a block uses (its own layer and those of its elements) that do not exist in
+        the drawing are created: colour/weight from the layer template, else from the
+        block's elements, else standard."""
+        fehlend = {}
+        for _n, els in d.variante_liste():
+            for el in els:
+                ln = getattr(el, "layer", None)
+                if ln and ln not in self.layers and ln not in fehlend and not el.eig_farbe:
+                    fehlend[ln] = (el.farbe, el.staerke if el.staerke else 0.35)
+        if ref_layer and ref_layer not in self.layers and ref_layer not in fehlend:
+            fehlend[ref_layer] = None
+        if not fehlend:
+            return
+        try:
+            vorlage = {ld["name"]: ld for ld in lade_konfiguration().get("layer_vorlage") or []}
+        except Exception:
+            vorlage = {}
+        for name, wert in fehlend.items():
+            if name in vorlage:
+                ld = vorlage[name]
+                self.layers[name] = Layer(name, ld.get("farbe", "#c29bff"),
+                                          ld.get("staerke", 0.35), ld.get("sichtbar", True))
+            elif wert:
+                self.layers[name] = Layer(name, wert[0], wert[1])
+            else:
+                self.layers[name] = Layer(name, "#c29bff", 0.35)
+        try:
+            self.layer_cb.config(values=list(self.layers.keys()))
+        except Exception:
+            pass
 
     def _block_layer(self, elemente):
         """Device blocks (with an electrical mask) go onto E_DEVICES."""
@@ -7382,7 +7225,6 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         return Ellipse(c[0], c[1], a, b, rot)
 
     def _ellipse_klick(self, pt):
-        de = SPRACHE["aktuell"] == "de"
         n = len(self._pts)
         if n >= 1 and math.hypot(pt[0] - self._pts[-1][0],
                                  pt[1] - self._pts[-1][1]) < 1e-9:
@@ -7391,12 +7233,9 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self.letzter_punkt = pt
         if len(self._pts) < 3:
             if len(self._pts) == 1:
-                self.status.set("Ellipse: Ende der ersten Achse setzen." if de
-                                else "Ellipse: set the end of the first axis.")
+                self.status.set(tr("txt.0161"))
             else:
-                self.status.set("Ellipse: Länge der zweiten Halbachse festlegen."
-                                if de else
-                                "Ellipse: set the length of the second semi-axis.")
+                self.status.set(tr("txt.0162"))
             return
         el = self._ellipse_aus_punkten(*self._pts)
         self._pts = []
@@ -7412,37 +7251,25 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self._pts.append(pt)
         self.letzter_punkt = pt
         n = len(self._pts)
-        de = SPRACHE["aktuell"] == "de"
         if n < 3:
             if modus == "mitte":
-                hinweise = (["Startpunkt (bestimmt Radius) setzen",
-                             "Endpunkt setzen - Richtung folgt der Maus"] if de else
-                            ["Set start point (determines radius)",
-                             "Set end point - direction follows mouse"])
+                hinweise = ([tr("txt.0272"), tr("txt.0273")])
             else:
-                hinweise = (["Zweiten Punkt (liegt auf dem Bogen) setzen",
-                             "Endpunkt setzen"] if de else
-                            ["Set second point (on the arc)", "Set end point"])
-            self.status.set(("Bogen: " if de else "Arc: ") + hinweise[n - 1])
+                hinweise = ([tr("txt.0274"), tr("txt.0275")])
+            self.status.set((tr("txt.0163")) + hinweise[n - 1])
             return
         erg = self._bogen_aus_punkten(self._pts)
         self._pts = []
         self.letzter_punkt = None
         self._clear_temp()
         if erg is None:
-            self.status.set(("Bogen nicht möglich (Punkte kollinear oder Winkel "
-                             "identisch)." if de else
-                             "Arc not possible (collinear points or identical "
-                             "angle)."))
+            self.status.set((tr("txt.0108")))
             return
         cx, cy, r, s, e = erg
         self._snapshot()
         self._ziel_liste().append(self._neuer_bogen(cx, cy, r, s, e))
         self.redraw()
-        self.status.set((f"Bogen platziert: R {r / self._einh_faktor():.2f}, "
-                         f"{bogen_sweep(s, e):.1f}°" if de else
-                         f"Arc placed: R {r / self._einh_faktor():.2f}, "
-                         f"{bogen_sweep(s, e):.1f}°"))
+        self.status.set((tr("txt.0034", p0=r / self._einh_faktor(), p1=bogen_sweep(s, e))))
 
     def _kreis_unter_punkt(self, pt):
         tol = 10.0 / self._ctx_skala()
@@ -7502,36 +7329,27 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                          dez=self._zahl(self.bem_dez, 2, ganz=True), **daten)
 
     def _winkel_hinweis(self):
-        de = SPRACHE["aktuell"] == "de"
         n = len(self._pts)
         if self.bem_art.get() == "winkel_linien":
             if getattr(self, "_wk_l1", None) is None:
-                return ("Winkelbemaßung: erste Linie anklicken." if de
-                        else "Angle dimension: click the first line.")
+                return (tr("txt.0109"))
             if n < 3:
-                return ("Winkelbemaßung: zweite Linie anklicken." if de
-                        else "Angle dimension: click the second line.")
+                return (tr("txt.0110"))
         else:
             if n == 0:
-                return ("Winkelbemaßung: Scheitelpunkt setzen." if de
-                        else "Angle dimension: set the vertex.")
+                return (tr("txt.0111"))
             if n == 1:
-                return ("Winkelbemaßung: Punkt auf dem ersten Schenkel setzen."
-                        if de else "Angle dimension: point on the first leg.")
+                return (tr("txt.0112"))
             if n == 2:
-                return ("Winkelbemaßung: Punkt auf dem zweiten Schenkel setzen."
-                        if de else "Angle dimension: point on the second leg.")
-        return ("Winkelbemaßung: Bogenposition setzen, Klick = fertig." if de
-                else "Angle dimension: set the arc position, click = done.")
+                return (tr("txt.0113"))
+        return (tr("txt.0004"))
 
     def _winkel_linien_klick(self, pt):
         """Two lines -> vertex = intersection, leg points = line ends nearer
         to the click."""
-        de = SPRACHE["aktuell"] == "de"
         el = self._element_unter_maus(pt[0], pt[1], 8 / self.view["zoom"])
         if not isinstance(el, Linie):
-            self.status.set("Bitte eine Linie anklicken." if de
-                            else "Please click a line.")
+            self.status.set(tr("txt.0114"))
             return
         if getattr(self, "_wk_l1", None) is None:
             self._wk_l1 = (el, pt)
@@ -7539,14 +7357,12 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             return
         l1, k1 = self._wk_l1
         if el is l1:
-            self.status.set("Zwei verschiedene Linien wählen." if de
-                            else "Pick two different lines.")
+            self.status.set(tr("txt.0115"))
             return
         c = G2.schnitt_geraden((l1.x1, l1.y1), (l1.x2, l1.y2),
                                (el.x1, el.y1), (el.x2, el.y2))
         if c is None:
-            self.status.set("Die Linien sind parallel." if de
-                            else "The lines are parallel.")
+            self.status.set(tr("txt.0116"))
             return
 
         def schenkel(l, k):
@@ -7565,20 +7381,14 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
 
     # ---- chain dimensions: further dimensions continue from the last point
     def _kette_hinweis(self):
-        de = SPRACHE["aktuell"] == "de"
         n = len(self._pts)
         if getattr(self, "_kette", None) is not None:
-            return ("Kettenbemaßung: nächsten Messpunkt setzen "
-                    "(ESC / Rechtsklick = Ende)." if de else
-                    "Chain dimension: set the next point (ESC / right-click = end).")
+            return (tr("txt.0035"))
         if n == 0:
-            return ("Kettenbemaßung: 1. Messpunkt setzen." if de
-                    else "Chain dimension: set the 1st point.")
+            return (tr("txt.0036"))
         if n == 1:
-            return ("Kettenbemaßung: 2. Messpunkt setzen." if de
-                    else "Chain dimension: set the 2nd point.")
-        return ("Kettenbemaßung: Maßlinie positionieren, Klick = fertig." if de
-                else "Chain dimension: position the line, click = done.")
+            return (tr("txt.0037"))
+        return (tr("txt.0005"))
 
     def _kette_element(self, p, q):
         """Dimension between p and q on the line of the first dimension."""
@@ -7596,7 +7406,6 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         return el
 
     def _kette_klick(self, pt):
-        de = SPRACHE["aktuell"] == "de"
         K = getattr(self, "_kette", None)
         n = len(self._pts)
         if K is None:
@@ -7637,7 +7446,6 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
     def _bem_klick(self, pt):
         art = self.bem_art.get()
         n = len(self._pts)
-        de = SPRACHE["aktuell"] == "de"
         if art == "kette":
             self._kette_klick(pt)
             return
@@ -7662,9 +7470,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             if n == 0:
                 k = self._kreis_unter_punkt(pt)
                 if k is None:
-                    self.status.set(("Bemaßung: Bitte einen Kreis oder Bogen "
-                                     "anklicken." if de else
-                                     "Dimension: please click a circle or arc."))
+                    self.status.set((tr("txt.0207")))
                     return
                 cx, cy, r = k
                 dx, dy = pt[0] - cx, pt[1] - cy
@@ -7672,26 +7478,21 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                 P = (cx + dx / d * r, cy + dy / d * r)
                 self._pts = [(cx, cy), P]
                 self.letzter_punkt = P
-                self.status.set(("Bemaßung: Position der Maßangabe setzen." if de
-                                 else "Dimension: set text position."))
+                self.status.set((tr("txt.0164")))
                 return
             self._bem_fertig(pt)
             return
         if n == 0:
             self._pts = [pt]
             self.letzter_punkt = pt
-            self.status.set(("Bemaßung: 2. Messpunkt setzen." if de
-                             else "Dimension: set 2nd measurement point."))
+            self.status.set((tr("txt.0117")))
         elif n == 1:
             if math.hypot(pt[0] - self._pts[0][0], pt[1] - self._pts[0][1]) < 1e-9:
-                self.status.set(("Bemaßung: 2. Punkt = 1. Punkt." if de
-                                 else "Dimension: 2nd point = 1st point."))
+                self.status.set((tr("txt.0208")))
                 return
             self._pts.append(pt)
             self.letzter_punkt = pt
-            self.status.set(("Bemaßung: Maus bewegen = Maßlinie positionieren, "
-                             "Klick = fertig." if de else
-                             "Dimension: move mouse to position line, click = done."))
+            self.status.set((tr("txt.0165")))
         else:
             self._bem_fertig(pt)
 
@@ -7705,12 +7506,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self.letzter_punkt = None
         self._clear_temp()
         self.redraw()
-        de = SPRACHE["aktuell"] == "de"
-        self.status.set((f"Bemaßung ({el.richtung}) platziert: "
-                         f"{el.text(self._einh_faktor(), self.dezimalkomma.get())}"
-                         if de else
-                         f"Dimension ({el.richtung}) placed: "
-                         f"{el.text(self._einh_faktor(), self.dezimalkomma.get())}"))
+        self.status.set((tr("txt.0038", p0=el.richtung, p1=el.text(self._einh_faktor(), self.dezimalkomma.get()))))
 
     def _vorschau_neu(self):
         self._clear_temp()
@@ -7969,19 +7765,13 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self._vp_fenster = vp
         self._vp_fenster_norm = norm
         self.letzter_punkt = None
-        de = SPRACHE["aktuell"] == "de"
-        self.status.set(("Ausschnitt: 1. Eckpunkt des Modellfensters setzen "
-                         "(Objektfang aktiv, ESC = abbrechen)." if de else
-                         "View: set 1st corner of model window "
-                         "(object snap active, ESC = cancel)."))
+        self.status.set((tr("txt.0039")))
 
     def _vp_fenster_klick(self, x, y):
         vp = self._vp_fenster
-        de = SPRACHE["aktuell"] == "de"
         if self.letzter_punkt is None:
             self.letzter_punkt = (x, y)
-            self.status.set(("Ausschnitt: Gegenüberliegende Ecke setzen." if de
-                             else "View: set opposite corner."))
+            self.status.set((tr("txt.0118")))
             return
         x1, y1 = self.letzter_punkt
         bw, bh = abs(x - x1), abs(y - y1)
@@ -7999,9 +7789,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self._clear_temp()
         self.redraw()
         self._viewport_modus_anzeige_aktualisieren()
-        self.status.set((f"Ausschnitt gesetzt, Maßstab {massstab_text(vp.zoom)}."
-                         if de else
-                         f"View set, scale {massstab_text(vp.zoom)}."))
+        self.status.set((tr("txt.0040", p0=massstab_text(vp.zoom))))
 
     def _vp_massstab_setzen(self, vp, text):
         self._snapshot()
@@ -8009,19 +7797,13 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self.redraw()
         if self._aktiver_viewport is vp:
             self._viewport_modus_anzeige_aktualisieren()
-        de = SPRACHE["aktuell"] == "de"
-        self.status.set((f"Viewport-Maßstab {text}" if de
-                         else f"Viewport scale {text}"))
+        self.status.set((tr("txt.0011", p0=text)))
 
     def _vp_sperre_umschalten(self, vp):
         vp.gesperrt = not vp.gesperrt
         if self._aktiver_viewport is vp:
             self._viewport_modus_anzeige_aktualisieren()
-        de = SPRACHE["aktuell"] == "de"
-        self.status.set(("Viewport-Maßstab " + (
-            "gesperrt." if vp.gesperrt else "entsperrt.") if de else
-            "Viewport scale " + (
-            "locked." if vp.gesperrt else "unlocked.")))
+        self.status.set(((tr("txt.0267") + (tr("txt.0268") if vp.gesperrt else tr("txt.0269")))))
 
     def _zustand(self):
         return {"elemente": [e.to_dict() for e in self.elemente],
@@ -8087,19 +7869,13 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             el.staerke = st
             el.linientyp = self.linientyp.get()
         self.redraw()
-        de = SPRACHE["aktuell"] == "de"
         st_txt = tr("tb.von_layer") if st is None else f"{st} mm"
-        self.status.set((f"Stärke {st_txt} / {self.linientyp.get()} auf "
-                         f"{len(ziele)} Element(e) angewendet." if de else
-                         f"Weight {st_txt} / {self.linientyp.get()} applied to "
-                         f"{len(ziele)} element(s)."))
+        self.status.set((tr("txt.0041", p0=st_txt, p1=self.linientyp.get(), p2=len(ziele))))
 
     def _op_start(self, typ):
         kind, vp = self._ctx()
-        de = SPRACHE["aktuell"] == "de"
         if kind == "vp":
-            self.status.set(("Bitte zuerst den Viewport verlassen (ESC)." if de
-                             else "Please leave the viewport first (ESC)."))
+            self.status.set((tr("txt.0119")))
             return
         if typ in ("move", "copy") and self.ansicht3d_aktiv() and not self._ist_layout():
             self._ansicht3d.punkt_verschieben(typ == "copy")      # 3D: base point -> target point
@@ -8123,16 +7899,14 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                             "objekte": vorher, "fenster": fw[0]}
                 self.redraw()
                 self._op_hinweis()
-                self.status.set(("STRECKEN: Basispunkt angeben." if de
-                                 else "STRETCH: specify base point."))
+                self.status.set((tr("txt.0166")))
                 return
             self.auswahl = vorher       # kept: only these get stretched
             self._op = {"typ": "stretch", "stufe": "fenster", "basis": None,
                         "objekte": vorher, "fenster": None}
             self.redraw()
             self._op_hinweis()
-            self.status.set(("STRECKEN: Fenster überkreuzend aufziehen." if de
-                             else "STRETCH: drag a crossing window."))
+            self.status.set((tr("txt.0120")))
             return
         sel = list(self.auswahl)
         if self.aktives_werkzeug.get() != "auswahl":
@@ -8150,70 +7924,49 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             self._op_hinweis()
 
     def _op_name(self):
-        de = SPRACHE["aktuell"] == "de"
-        return {"move": "VERSCHIEBEN" if de else "MOVE",
-                "copy": "KOPIEREN" if de else "COPY",
-                "copybase": "KOPIEREN MIT BASISPUNKT" if de else "COPY WITH BASE POINT",
-                "array": "REIHE" if de else "ARRAY",
-                "rotate": "DREHEN" if de else "ROTATE",
-                "scale": "SKALIEREN" if de else "SCALE",
-                "mirror": "SPIEGELN" if de else "MIRROR",
-                "align": "AUSRICHTEN" if de else "ALIGN",
-                "stretch": "STRECKEN" if de else "STRETCH"}.get(self._op["typ"], "")
+        return {"move": tr("txt.0167"),
+                "copy": tr("txt.0168"),
+                "copybase": tr("txt.0169"),
+                "array": tr("txt.0170"),
+                "rotate": tr("txt.0171"),
+                "scale": tr("txt.0172"),
+                "mirror": tr("txt.0173"),
+                "align": tr("txt.0174"),
+                "stretch": tr("txt.0175")}.get(self._op["typ"], "")
 
     def _op_hinweis(self):
         op = self._op
         if op is None:
             return
-        de = SPRACHE["aktuell"] == "de"
         if op.get("stufe") == "fenster":
-            t = ("Fenster überkreuzend aufziehen (umfasst zu streckende Punkte)"
-                 if de else
-                 "Drag a crossing window (contains points to stretch)")
+            t = (tr("txt.0042"))
         elif op["stufe"] == "wahl":
-            t = ("Objekte wählen, dann Enter oder Rechtsklick" if de
-                 else "Select objects, then Enter or right-click")
+            t = (tr("txt.0121"))
         elif op["typ"] == "align":
             t = tr("msg.align." + {"basis": "s1", "ziel": "d1", "s2": "s2", "d2": "d2"}[op["stufe"]])
         elif op["stufe"] == "basis":
             if op["typ"] == "mirror":
-                t = ("Ersten Punkt der Spiegelachse angeben" if de
-                     else "Specify the first point of the mirror line")
+                t = (tr("txt.0209"))
             else:
-                t = ("Basispunkt angeben (klicken oder x,y)" if de
-                     else "Specify base point (click or x,y)")
+                t = (tr("txt.0210"))
         else:
             if op["typ"] == "copy":
-                t = (("Zielpunkt: klicken, 'x,y', '@dx,dy', 'L<Winkel' - "
-                      "Enter/Rechtsklick = fertig") if de else
-                     ("Target point: click, 'x,y', '@dx,dy', 'L<angle' - "
-                      "Enter/right-click = done"))
+                t = (tr("txt.0211"))
             elif op["typ"] == "mirror":
-                t = ("Zweiten Punkt der Spiegelachse angeben" if de else
-                     "Specify the second point of the mirror line")
+                t = (tr("txt.0213"))
             elif op["typ"] == "rotate":
-                t = (("Drehwinkel in Grad eingeben (gegen Uhrzeigersinn) "
-                      "oder Maus bewegen + Klick") if de else
-                     ("Enter rotation angle in degrees (CCW) "
-                      "or move mouse + click"))
+                t = (tr("txt.0215"))
             elif op["typ"] == "stretch":
-                t = ("Zielpunkt: klicken oder 'x,y' / '@dx,dy' / 'L<Winkel'"
-                     if de else
-                     "Target point: click or 'x,y' / '@dx,dy' / 'L<angle'")
+                t = (tr("txt.0216"))
             else:
-                t = (("Zielpunkt: klicken, 'x,y', '@dx,dy' oder 'L<Winkel' "
-                      "(Abstand)") if de else
-                     ("Target point: click, 'x,y', '@dx,dy' or 'L<angle' "
-                      "(distance)"))
+                t = (tr("txt.0217"))
         self.status.set(f"{self._op_name()}: {t}")
         self.lbl_hinweis.config(text=f"{self._op_name()}: {t}")
 
     def _op_bestaetigen(self):
         op = self._op
-        de = SPRACHE["aktuell"] == "de"
         if not self.auswahl:
-            self.status.set(("Keine Objekte gewählt - ESC bricht ab." if de
-                             else "No objects selected - ESC cancels."))
+            self.status.set((tr("txt.0122")))
             return
         op["objekte"] = list(self.auswahl)
         if op["typ"] == "array":
@@ -8245,16 +7998,13 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                         ziel.append(k)
                         neu += 1
         self.redraw()
-        de = SPRACHE["aktuell"] == "de"
-        self.status.set((f"Reihe: {neu} Kopie(n) erzeugt ({nx} x {ny})." if de
-                         else f"Array: {neu} copy(ies) created ({nx} x {ny})."))
+        self.status.set((tr("txt.0043", p0=neu, p1=nx, p2=ny)))
 
     def _op_klick(self, pt):
         op = self._op
         if op is None:
             return
         pt = self._op_achse(pt)
-        de = SPRACHE["aktuell"] == "de"
         if op["typ"] == "align":
             if op["stufe"] != "wahl":
                 self._align_klick(pt)
@@ -8273,11 +8023,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                 self._snapshot()
                 self._stretch_anwenden(op["fenster"], dx, dy)
                 self._op_beenden(
-                    (f"Gestrekt um dx={dx / self._einh_faktor():.3f}, "
-                     f"dy={dy / self._einh_faktor():.3f} {self.einheit.get()}"
-                     if de else
-                     f"Stretched by dx={dx / self._einh_faktor():.3f}, "
-                     f"dy={dy / self._einh_faktor():.3f} {self.einheit.get()}"))
+                    (tr("txt.0176", p0=dx / self._einh_faktor(), p1=dy / self._einh_faktor(), p2=self.einheit.get())))
                 return
         if op["stufe"] == "basis":
             op["basis"] = pt
@@ -8305,9 +8051,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                 for el in op["objekte"]:
                     el.drehen(bx, by, winkel)
                 self._op_beenden(
-                    (f"Gedreht um {winkel:.2f}° um ({bx:.2f}, {by:.2f})"
-                     if de else
-                     f"Rotated by {winkel:.2f}° around ({bx:.2f}, {by:.2f})"))
+                    (tr("txt.0177", p0=winkel, p1=bx, p2=by)))
                 return
             dx, dy = pt[0] - op["basis"][0], pt[1] - op["basis"][1]
             if abs(dx) < 1e-12 and abs(dy) < 1e-12:
@@ -8319,11 +8063,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                     el.verschieben(dx, dy)
                 n_ein = self._einrasten(op["objekte"])
                 self._op_beenden(
-                    (f"Verschoben um dx={dx / self._einh_faktor():.3f}, "
-                     f"dy={dy / self._einh_faktor():.3f} {self.einheit.get()}"
-                     if de else
-                     f"Moved by dx={dx / self._einh_faktor():.3f}, "
-                     f"dy={dy / self._einh_faktor():.3f} {self.einheit.get()}"))
+                    (tr("txt.0178", p0=dx / self._einh_faktor(), p1=dy / self._einh_faktor(), p2=self.einheit.get())))
             else:
                 kopien = []
                 for el in op["objekte"]:
@@ -8335,49 +8075,40 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                 self._einrasten(kopien)
                 self.redraw()
                 self.status.set(
-                    (f"Kopiert (dx={dx / self._einh_faktor():.3f}, "
-                     f"dy={dy / self._einh_faktor():.3f}). Weiteren Zielpunkt "
-                     "angeben oder Enter/Rechtsklick = fertig." if de else
-                     f"Copied (dx={dx / self._einh_faktor():.3f}, "
-                     f"dy={dy / self._einh_faktor():.3f}). Specify another "
-                     "target point or Enter/right-click = done."))
+                    (tr("txt.0179", p0=dx / self._einh_faktor(), p1=dy / self._einh_faktor())))
 
     def _op_skalieren_fertig(self):
         """Scale: factor from a small dialog, applied about the base point."""
         op = self._op
-        de = SPRACHE["aktuell"] == "de"
         bx, by = op["basis"]
         text = simpledialog.askstring(
-            "Skalieren" if de else "Scale",
-            ("Skalierfaktor (z. B. 2 oder 0,5):" if de
-             else "Scale factor (e.g. 2 or 0.5):"),
+            tr("txt.0044"),
+            (tr("txt.0045")),
             initialvalue="2", parent=self.root)
         if text is None:
-            self._op_beenden("Abgebrochen." if de else "Cancelled.")
+            self._op_beenden(tr("txt.0074"))
             return
         try:
             f = float(text.strip().replace(",", "."))
             if not (1e-6 < f < 1e6):
                 raise ValueError
         except ValueError:
-            self.status.set("Ungültiger Faktor." if de else "Invalid factor.")
-            self._op_beenden("Ungültiger Faktor." if de else "Invalid factor.")
+            self.status.set(tr("txt.0180"))
+            self._op_beenden(tr("txt.0180"))
             return
         self._snapshot()
         for el in op["objekte"]:
             el.skalieren(bx, by, f)
-        self._op_beenden((f"Skaliert um Faktor {f:g}." if de
-                          else f"Scaled by factor {f:g}."))
+        self._op_beenden((tr("txt.0046", p0=f)))
 
     def _op_spiegeln_fertig(self, pt):
         op = self._op
-        de = SPRACHE["aktuell"] == "de"
         ax, ay = op["basis"]
         if math.hypot(pt[0] - ax, pt[1] - ay) < 1e-9:
             return
         loeschen = messagebox.askyesno(
-            "Spiegeln" if de else "Mirror",
-            ("Originalobjekte löschen?" if de else "Delete the original objects?"),
+            tr("txt.0047"),
+            (tr("txt.0048")),
             default=messagebox.NO, parent=self.root)
         self._snapshot()
         if loeschen:
@@ -8393,7 +8124,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                     ziel.append(k)
                     kopien.append(k)
             self._einrasten(kopien)
-        self._op_beenden("Gespiegelt." if de else "Mirrored.")
+        self._op_beenden(tr("txt.0049"))
 
     def _stretch_anwenden(self, fenster, dx, dy):
         xmin, ymin, xmax, ymax = fenster
@@ -8411,6 +8142,10 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             self._stretch_element(el, innen, dx, dy)
 
     def _stretch_element(self, el, innen, dx, dy):
+        if isinstance(el, Oeffnung):          # door / window moves along with its wall
+            if innen(el.x, el.y):
+                el.x += dx; el.y += dy
+            return
         if isinstance(el, BlockReferenz):
             if innen(el.x, el.y):
                 el.x += dx; el.y += dy
@@ -8483,12 +8218,8 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self._clipboard_basispunkt = op["basis"]
         self._clipboard_mit_basis = True
         n = len(self._clipboard)
-        de = SPRACHE["aktuell"] == "de"
         self._op_beenden(
-            (f"{n} Objekt(e) mit Basispunkt kopiert - mit Strg+V einfügen "
-             "(Basispunkt hängt am Mauszeiger)." if de else
-             f"{n} object(s) copied with base point - paste with Ctrl+V "
-             "(base point attached to cursor)."))
+            (tr("txt.0050", p0=n)))
 
     def _op_beenden(self, meldung=""):
         self._op = None
@@ -8505,18 +8236,17 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         op = self._op
         if op is None:
             return False
-        de = SPRACHE["aktuell"] == "de"
         if op["stufe"] == "wahl":
             if self.auswahl:
                 self._op_bestaetigen()
             else:
-                self._op_beenden("Abgebrochen." if de else "Cancelled.")
+                self._op_beenden(tr("txt.0074"))
         elif op["stufe"] == "ziel" and op["typ"] == "copy":
-            self._op_beenden("Kopieren beendet." if de else "Copy finished.")
+            self._op_beenden(tr("txt.0181"))
         elif op["typ"] == "align" and op["stufe"] == "s2":
             self._align_fertig()                      # Enter at the 2nd source point = move only
         else:
-            self._op_beenden("Abgebrochen." if de else "Cancelled.")
+            self._op_beenden(tr("txt.0074"))
         return True
 
     def _op_vorschau(self, pt):
@@ -8678,11 +8408,8 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                 self._snapshot()
                 for el in op["objekte"]:
                     el.drehen(bx, by, winkel)
-                de = SPRACHE["aktuell"] == "de"
                 self._op_beenden(
-                    (f"Gedreht um {-winkel:.2f}° um ({bx:.2f}, {by:.2f})"
-                     if de else
-                     f"Rotated by {-winkel:.2f}° around ({bx:.2f}, {by:.2f})"))
+                    (tr("txt.0177", p0=-winkel, p1=bx, p2=by)))
                 return
             except ValueError:
                 pass
@@ -8734,9 +8461,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                 var.set(False)
             else:
                 var.set(not var.get())
-            de = SPRACHE["aktuell"] == "de"
-            name = (("Objektfang" if cmd == "ofang" else "Ortho") if de
-                    else ("Object snap" if cmd == "ofang" else "Ortho"))
+            name = ((tr("txt.0276") if cmd == "ofang" else "Ortho"))
             self.status.set(f"{name}: {'EIN' if var.get() else 'AUS'}")
         elif cmd in ("move", "copy", "copybase", "array", "rotate", "stretch",
                      "scale", "mirror"):
@@ -8820,9 +8545,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
 
     def _cmd_wert(self, cmd, arg):
         var = self.raster_mm if cmd == "raster" else self.fang_mm
-        de = SPRACHE["aktuell"] == "de"
-        name = ("Raster" if cmd == "raster" else "Fang") if de else \
-               ("Grid" if cmd == "raster" else "Snap")
+        name = (tr("txt.0264") if cmd == "raster" else tr("txt.0196"))
 
         def setze(text):
             t = text.strip().upper()
@@ -8833,8 +8556,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             elif t:
                 wert = self._parse_einzelwert(text, self._einh_faktor())
                 if wert <= 0:
-                    raise ValueError(("Der Wert muss größer als 0 sein." if de
-                                      else "Value must be greater than 0."))
+                    raise ValueError((tr("txt.0214")))
                 var.set(round(wert, 6))
                 if cmd == "fang":
                     self.grid_snap.set(True)
@@ -8850,31 +8572,24 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                 messagebox.showerror(name, str(ex))
         else:
             self._cmd_pending = setze
-            txt = ((f"{name}weite eingeben [aktuell {var.get():g} mm] oder "
-                    "EIN/AUS") if de else
-                   (f"Enter {name.lower()} spacing [current {var.get():g} mm] "
-                    "or ON/OFF"))
+            txt = (tr("txt.0051", p0=name, p1=var.get(), p2=name.lower()))
             self.lbl_hinweis.config(text=txt)
             self.status.set(txt)
             self.entry_eingabe.focus_set()
 
     def _kontextmenue(self, event):
-        de = SPRACHE["aktuell"] == "de"
         stil = dict(tearoff=0, bg=FARBEN["bg_mittel"], fg=FARBEN["cyan"],
                     activebackground=FARBEN["cyan"],
                     activeforeground=FARBEN["bg_dunkel"])
         m = tk.Menu(self.root, **stil)
         if self.auswahl:
-            m.add_command(label=("Verschieben (Basispunkt)" if de
-                                 else "Move (base point)"),
+            m.add_command(label=(tr("txt.0182")),
                           command=lambda: self._op_start("move"))
-            m.add_command(label=("Kopieren (Basispunkt, mehrfach)" if de
-                                 else "Copy (base point, multiple)"),
+            m.add_command(label=(tr("txt.0183")),
                           command=lambda: self._op_start("copy"))
-            m.add_command(label=("Kopieren mit Basispunkt (COPYBASE)" if de
-                                 else "Copy with base point (COPYBASE)"),
+            m.add_command(label=(tr("txt.0184")),
                           command=lambda: self._op_start("copybase"))
-            m.add_command(label=("Reihe (Anordnung)..." if de else "Array..."),
+            m.add_command(label=(tr("txt.0185")),
                           command=lambda: self._op_start("array"))
             m.add_command(label=tr("menu.bearbeiten.drehen_basis"),
                           command=lambda: self._op_start("rotate"))
@@ -8926,13 +8641,13 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             m.add_command(label=tr("menu.bearbeiten.eigenschaften"),
                           command=self.eigenschaften_fenster)
             m.add_separator()
-            m.add_command(label=("Löschen" if de else "Delete"),
+            m.add_command(label=(tr("txt.0082")),
                           command=self.auswahl_loeschen)
             m.add_separator()
-        m.add_command(label=("Einfügen" if de else "Paste"), command=self.einfuegen)
-        m.add_command(label=("Alles markieren" if de else "Select all"),
+        m.add_command(label=(tr("txt.0123")), command=self.einfuegen)
+        m.add_command(label=(tr("txt.0124")),
                       command=self.alle_markieren)
-        m.add_command(label=("Zoom Grenzen" if de else "Zoom extents"),
+        m.add_command(label=(tr("txt.0125")),
                       command=self.zoom_grenzen)
         self._menue_zeigen(m, event.x_root, event.y_root)
 
@@ -9138,14 +8853,85 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
     # NEW: drawing <-> dict/file (used by save/open
     #      and by project management)
     # ========================================================
-    def _standard_layers(self):
-        return {
+    def _standard_layers(self, vorlage=False):
+        """Built-in layers. With vorlage=True the user's layer template (Layer dialog >
+        "Save as template") is laid over them - only for NEW drawings, never for files
+        that are opened."""
+        layers = {
             "0": Layer("0", "#c29bff", 0.35),
             "Konstruktion": Layer("Konstruktion", "#b886fb", 0.25),
             "Bemaßung": Layer("Bemaßung", "#ff2d95", 0.25),
             "Schrift": Layer("Schrift", "#d8d0e8", 0.35),
             "Verdeckt": Layer("Verdeckt", "#8b7ea8", 0.25),
         }
+        if vorlage:
+            try:
+                for ld in lade_konfiguration().get("layer_vorlage") or []:
+                    layers[ld["name"]] = Layer(ld["name"], ld.get("farbe", "#c29bff"),
+                                               ld.get("staerke", 0.35),
+                                               ld.get("sichtbar", True))
+            except Exception as ex:
+                print(f"[KatieCAD] Layer-Vorlage: {ex}")
+        return layers
+
+    def layer_vorlage_speichern(self):
+        """Stores the layers of the current drawing as the template for new drawings."""
+        self._config_setzen("layer_vorlage", [l.to_dict() for l in self.layers.values()])
+        self.status.set(tr("msg.layer.vorlage_gespeichert", n=len(self.layers)))
+
+    def layer_vorlage_zuruecksetzen(self):
+        self._config_setzen("layer_vorlage", [])
+        self.status.set(tr("msg.layer.vorlage_zurueck"))
+
+    def layer_aus_datei_uebernehmen(self):
+        """Copies the layers (colour, weight) of another drawing / project into this one.
+        Existing layers keep their settings unless the user chooses to overwrite them."""
+        pfad = filedialog.askopenfilename(
+            parent=self.root, title=tr("dlg.layer.aus_datei.titel"),
+            filetypes=[(tr("msg.layer.dateityp"), "*.cadjson *" + PROJEKT_ENDUNG),
+                       (tr("txt.0198"), "*.*")])
+        if not pfad:
+            return None
+        try:
+            if pfad.lower().endswith(PROJEKT_ENDUNG):
+                prj = Projekt.laden(pfad)
+                quellen = [prj.blatt_pfad(i) for i in range(len(prj.blaetter))]
+            else:
+                quellen = [pfad]
+            gefunden = {}
+            for q in quellen:
+                with open(q, "r", encoding="utf-8") as f:
+                    for ld in json.load(f).get("layers", []):
+                        gefunden.setdefault(ld["name"], ld)
+        except Exception as ex:
+            messagebox.showerror(tr("msg.oeffnen_fehlgeschlagen"), str(ex), parent=self.root)
+            return None
+        return self._layer_uebernehmen(list(gefunden.values()))
+
+    def _layer_uebernehmen(self, layer_dicts):
+        """Adds new layers; for existing ones that differ asks once whether to overwrite."""
+        neu = [d for d in layer_dicts if d["name"] not in self.layers]
+        abw = [d for d in layer_dicts if d["name"] in self.layers and (
+            self.layers[d["name"]].farbe != d.get("farbe", "#c29bff")
+            or self.layers[d["name"]].staerke != d.get("staerke", 0.35))]
+        ueber = False
+        if abw:
+            ueber = messagebox.askyesno(
+                tr("dlg.layer.aus_datei.titel"),
+                tr("msg.layer.aus_datei.abweichend", n=len(abw),
+                   namen=", ".join(d["name"] for d in abw)), parent=self.root)
+        if not neu and not (abw and ueber):
+            self.status.set(tr("msg.layer.aus_datei.nichts"))
+            return 0
+        self._snapshot()
+        for d in neu + (abw if ueber else []):
+            self.layers[d["name"]] = Layer(d["name"], d.get("farbe", "#c29bff"),
+                                           d.get("staerke", 0.35), d.get("sichtbar", True))
+        self.layer_cb.config(values=list(self.layers.keys()))
+        self.redraw()
+        n = len(neu) + (len(abw) if ueber else 0)
+        self.status.set(tr("msg.layer.aus_datei.fertig", n=n))
+        return n
 
     def _zeichnung_daten(self):
         return {
@@ -9178,7 +8964,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             layers = [l.to_dict() for l in self.layers.values()]
         else:
             fmt, bg_l = Layout.STANDARD_FORMAT, Layout.STANDARD_BG
-            layers = [l.to_dict() for l in self._standard_layers().values()]
+            layers = [l.to_dict() for l in self._standard_layers(vorlage=True).values()]
         return {
             "einheit": self.einheit.get(),
             "massstab": self.massstab.get(),
@@ -9535,8 +9321,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         d = dlg.result
         # Fix the dates once (instead of "today" changing every day)
         heute = datetime.date.today()
-        heute = (heute.strftime("%d.%m.%Y") if SPRACHE["aktuell"] == "de"
-                 else heute.strftime("%Y-%m-%d"))
+        heute = datum_text(heute)
         if d.get("gezeichnet") and not d.get("datum"):
             d["datum"] = heute
         if d.get("geprueft") and not d.get("geprueft_datum"):
@@ -9858,9 +9643,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
     def attdef_erstellen(self):
         """ATTDEF: define an attribute and place it in the model."""
         if self._ist_layout():
-            self.status.set(("Bitte in die Modell-Ansicht wechseln."
-                             if SPRACHE["aktuell"] == "de"
-                             else "Please switch to model view."))
+            self.status.set((tr("txt.0095")))
             return
         dlg = AttributDefinitionDialog(
             self.root, hoehe=self._zahl(self.text_hoehe, 3.5))
@@ -9913,11 +9696,15 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
     def _attribute_abfragen(self, ref):
         """Prompts for the attribute values on insertion (if any).
         Cancelling keeps the default values."""
+        self._varianten_abgleichen(ref)
         aus = self._attr_ausschluss(ref)
-        if not [ad for ad in ref.attribut_definitionen() if ad.tag not in aus]:
+        if not [ad for ad in ref.attribut_definitionen() if ad.tag not in aus] \
+                and not ref.varianten:
             return
         dlg = BlockAttributeDialog(self.root, ref, ausschliessen=aus)
         if dlg.result:
+            if dlg.variante is not None:
+                ref.setze_variante(dlg.variante)
             ref.setze_attribute(dlg.result)
             ref.setze_ausgeblendet(dlg.ausgeblendet)
             m = ref.geraet_maske()
@@ -9932,6 +9719,12 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                     ref.sp_dx = ref.sp_dy = 0.0
                 m.spiegel = dlg.spiegel
 
+    def _varianten_abgleichen(self, ref):
+        """Variants added to the block later also appear in already placed devices."""
+        d = self.block_bibliothek.get(ref.block_name)
+        if d is not None:
+            ref.varianten_abgleichen(d)
+
     def attribute_bearbeiten(self, ref=None):
         """ATTEDIT: edit the attribute values of a selected block."""
         if ref is None:
@@ -9940,16 +9733,19 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             if not kandidaten:
                 self.status.set(tr("msg.attedit.keine_auswahl"))
                 return
-            mit = [e for e in kandidaten if e.attribut_definitionen()]
+            mit = [e for e in kandidaten if e.attribut_definitionen() or e.varianten]
             if not mit:
                 self.status.set(tr("msg.attedit.keine_attribute"))
                 return
             ref = mit[0]
+        self._varianten_abgleichen(ref)
         dlg = BlockAttributeDialog(self.root, ref,
                                    ausschliessen=self._attr_ausschluss(ref))
         if dlg.result is None:
             return
         self._snapshot()
+        if dlg.variante is not None:
+            ref.setze_variante(dlg.variante)
         ref.setze_attribute(dlg.result)
         ref.setze_ausgeblendet(dlg.ausgeblendet)
         m = ref.geraet_maske()
@@ -9984,7 +9780,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             d = self.block_bibliothek.get(refs[0].block_name)
             if d is None:
                 d = BlockDefinition(refs[0].block_name, (0.0, 0.0),
-                                    refs[0].elemente)
+                                    refs[0].elemente, refs[0].varianten)
         elif len(self.block_bibliothek) > 0:
             name = _BlockAuswahlDialog(
                 self.root, self.block_bibliothek,
@@ -10785,14 +10581,12 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
 
     def projekt_dxf_exportieren(self):
         """The whole project as ONE DXF file (sheets side by side, 4 per row)."""
-        de = SPRACHE["aktuell"] == "de"
         p = self.projekt
         if p is None:
             self.status.set(tr("msg.projekt.kein_projekt"))
             return
         if not EZDXF_VERFUEGBAR:
-            messagebox.showwarning("DXF", ("ezdxf nicht installiert." if de
-                                           else "ezdxf is not installed."))
+            messagebox.showwarning("DXF", (tr("txt.0101")))
             return
         pfad = filedialog.asksaveasfilename(
             parent=self.root, defaultextension=".dxf", initialdir=p.ordner,
@@ -10815,8 +10609,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             dxf_projekt_schreiben(doc, seiten, spalten=4)
             doc.saveas(pfad)
         except Exception as ex:
-            messagebox.showerror("DXF", (f"Fehler:\n{ex}" if de
-                                         else f"Error:\n{ex}"), parent=self.root)
+            messagebox.showerror("DXF", (tr("txt.0155", p0=ex)), parent=self.root)
             return
         self.status.set(tr("msg.dxfp.fertig", n=len(seiten), pfad=pfad))
         rest = uebersprungen + nicht_lesbar
@@ -10895,50 +10688,20 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         the evaluation switch (off without project)."""
         an = bool(self.projekt is not None and self.projekt.doku.get("einpolig_auswerten"))
         core.EINPOLIG_MIT[0] = an
-        v = getattr(self, "_v_einpolig_mit", None)
-        if v is not None:
-            v.set(an)
-
-    def einpolig_auswerten_umschalten(self):
-        """Menu check mark Project > 'Evaluate single-pole representation too'."""
-        p = self.projekt
-        if p is None:
-            self.status.set(tr("msg.projekt.kein_projekt"))
-            self._v_einpolig_mit.set(False)
-            return
-        p.doku = {**p.doku, "einpolig_auswerten": bool(self._v_einpolig_mit.get())}
-        self._einpolig_sync()
-        try:
-            p.speichern()
-        except Exception as e:
-            messagebox.showerror(tr("msg.projekt.titel"),
-                                 tr("msg.projekt.fehler", fehler=e), parent=self.root)
-        self.redraw()
-        self._mark_dirty()
-        self.status.set(tr("msg.einpolig.mit_an" if core.EINPOLIG_MIT[0]
-                           else "msg.einpolig.mit_aus"))
 
     def geraete_nummerieren(self):
         """Gives devices with an incomplete designation ('-K', 'K?') the next
         free number (-K1, -K2 ...); numbers continue after the highest one
         in the whole project."""
-        de = SPRACHE["aktuell"] == "de"
         if self._ist_layout():
-            self.status.set("Nummerieren gilt für die Zeichnung (Modell)." if de
-                            else "Numbering works on the drawing (model).")
+            self.status.set(tr("txt.0126"))
             return
         p = self.projekt
         nur_aktiv = True
         if p is not None and len(p.blaetter) > 1:
             a = messagebox.askyesnocancel(
-                "Geräte nummerieren" if de else "Number devices",
-                ("Ja = ganzes Projekt nummerieren\nNein = nur dieses Blatt\n\n"
-                 "Geräte ohne Nummer (z. B. „-K“) bekommen die nächste freie "
-                 "Nummer. Bereits vergebene Nummern bleiben unverändert."
-                 if de else
-                 "Yes = number the whole project\nNo = this sheet only\n\n"
-                 "Devices without a number (e.g. '-K') get the next free number. "
-                 "Numbers already assigned stay unchanged."),
+                tr("txt.0127"),
+                (tr("txt.0128")),
                 parent=self.root)
             if a is None:
                 return
@@ -10953,25 +10716,15 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         blaetter.sort(key=lambda b: b[0])
         aend, ohne = NUM.plan(blaetter, {aktiv} if nur_aktiv else None)
         if not aend:
-            self.status.set((f"Keine Geräte zum Nummerieren gefunden "
-                             f"({ohne} ohne Kennzeichen-Präfix)." if de else
-                             f"No devices to number ({ohne} without a designation prefix).")
+            self.status.set((tr("txt.0186", p0=ohne))
                             if ohne else
-                            ("Keine Geräte zum Nummerieren gefunden." if de
-                             else "No devices to number."))
+                            (tr("txt.0187")))
             return
         bsp = ", ".join(f"{a or '?'} → {n}" for _h, _k, a, n, _b in aend[:3])
         if not messagebox.askyesno(
-                "Geräte nummerieren" if de else "Number devices",
-                (f"{len(aend)} Gerät(e) werden nummeriert, z. B. {bsp}."
-                 + (" Änderungen in anderen Blättern werden sofort gespeichert "
-                    "und lassen sich nicht rückgängig machen." if any(
-                        b != aktiv for *_x, b in aend) else "") + "\n\nFortfahren?")
-                if de else
-                (f"{len(aend)} device(s) will be numbered, e.g. {bsp}."
-                 + (" Changes in other sheets are saved immediately and cannot "
-                    "be undone." if any(b != aktiv for *_x, b in aend) else "")
-                 + "\n\nContinue?"), parent=self.root):
+                tr("txt.0127"),
+                ((tr("txt.0277", p0=len(aend), p1=bsp) + (tr("txt.0278") if any(
+                        b != aktiv for *_x, b in aend) else "")) + tr("txt.0279")), parent=self.root):
             return
         self._snapshot()
         NUM.anwenden(aend)
@@ -10979,13 +10732,12 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             try:
                 self._json_atomar_schreiben(daten[i][0], daten[i][1])
             except OSError as ex:
-                messagebox.showerror("Geräte nummerieren" if de else "Number devices",
+                messagebox.showerror(tr("txt.0127"),
                                      str(ex), parent=self.root)
         self._qv_cache.clear()
         self._ge_cache.clear()
         self.redraw()
-        self.status.set(f"{len(aend)} Gerät(e) nummeriert." if de
-                        else f"{len(aend)} device(s) numbered.")
+        self.status.set(tr("txt.0052", p0=len(aend)))
 
     def bauteilkatalog(self):
         """Parts catalogue (manufacturer / order number per TYP) of the project."""
@@ -11009,9 +10761,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             return
         p.daten["bauteile"] = dlg.result
         p.speichern()
-        de = SPRACHE["aktuell"] == "de"
-        self.status.set(f"Bauteilkatalog gespeichert ({len(dlg.result)} Einträge)." if de
-                        else f"Parts catalogue saved ({len(dlg.result)} entries).")
+        self.status.set(tr("txt.0053", p0=len(dlg.result)))
 
     def dokumentation_erzeugen(self):
         p = self.projekt
@@ -11197,7 +10947,6 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         except Exception as ex:
             messagebox.showerror("PDF", str(ex))
             return
-        de = SPRACHE["aktuell"] == "de"
         if aktion == "pdf":
             pfad = filedialog.asksaveasfilename(
                 defaultextension=".pdf", filetypes=[("PDF", "*.pdf")])
@@ -11205,31 +10954,32 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                 return
             with open(pfad, "wb") as f:
                 f.write(daten)
-            self.status.set((f"PDF gespeichert: {pfad}" if de
-                             else f"PDF saved: {pfad}"))
+            self.status.set((tr("txt.0129", p0=pfad)))
         else:
             fd, pfad = tempfile.mkstemp(suffix=".pdf", prefix="katiecad_")
             with os.fdopen(fd, "wb") as f:
                 f.write(daten)
             pdf_senden(pfad, aktion == "druck")
-            self.status.set(("An den Drucker gesendet." if de
-                             else "Sent to printer.") if aktion == "druck" else
-                            ("Vorschau geöffnet." if de else "Preview opened."))
+            self.status.set((tr("txt.0188")) if aktion == "druck" else
+                            (tr("txt.0189")))
 
     # --------------------------------------------------------
     # Block commands
     # --------------------------------------------------------
+    def variante_hinzufuegen(self):
+        """Adds the selected drawing as a further variant to an existing block."""
+        self.block_erzeugen()
+        if self._block_erzeuge_auswahl is not None:
+            self._variante_modus = True
+
     def block_erzeugen(self, geraet=False):
+        self._variante_modus = False
         self._geraet_modus = bool(geraet)
-        de = SPRACHE["aktuell"] == "de"
         if self._ist_layout():
-            self.status.set(("Bitte in die Modell-Ansicht wechseln." if de
-                             else "Please switch to model view."))
+            self.status.set((tr("txt.0095")))
             return
         if not self.auswahl:
-            self.status.set(("Bitte zuerst Objekte markieren, dann B drücken."
-                             if de else
-                             "Please select objects first, then press B."))
+            self.status.set((tr("txt.0130")))
             return
         self._block_erzeuge_auswahl = list(self.auswahl)
         self.letzter_punkt = None
@@ -11253,7 +11003,6 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                                  parent=self.root)
 
     def _block_erzeugen_fertig_intern(self, basispunkt):
-        de = SPRACHE["aktuell"] == "de"
         if self._block_erzeuge_auswahl is None:
             return
         auswahl = self._block_erzeuge_auswahl
@@ -11270,9 +11019,13 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             k.verschieben(-bx, -by)
             relativ.append(k)
         if not relativ:
-            self.status.set(("Block ist leer - abgebrochen." if de
-                             else "Block is empty - cancelled."))
+            self.status.set((tr("txt.0131")))
             self._update_eingabe_hinweis()
+            return
+
+        if getattr(self, "_variante_modus", False):
+            self._variante_modus = False
+            self._variante_anlegen(relativ)
             return
 
         vorschlag = self._naechster_block_name()
@@ -11285,8 +11038,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             self.root, geom, vorschlag, self._block_speicherordner(),
             vorschlag_dateiname).result
         if not ergebnis:
-            self.status.set(("Block-Erzeugen abgebrochen." if de
-                             else "Block creation cancelled."))
+            self.status.set((tr("txt.0072")))
             self._update_eingabe_hinweis()
             return
         name = ergebnis["name"]
@@ -11300,8 +11052,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                                      hinweis=tr("dlg.maske.hinweis"),
                                      spiegel=maske.spiegel)
                 if dr.result is None:
-                    self.status.set(("Block-Erzeugen abgebrochen." if de
-                                     else "Block creation cancelled."))
+                    self.status.set((tr("txt.0072")))
                     self._update_eingabe_hinweis()
                     return
                 maske.rolle = dr.result["rolle"] or "haupt"
@@ -11334,7 +11085,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             for k in relativ:
                 if isinstance(k, Verbindungspunkt):
                     k.layer = E_DEVICES
-        ref = BlockReferenz(bx, by, name, definition.elemente,
+        ref = BlockReferenz(bx, by, name, definition.elemente, varianten=definition.varianten,
                             layer=(self._elektro_layer(E_DEVICES) if ist_geraet
                                    else self.aktiver_layer.get()),
                             farbe=self.zeichenfarbe,
@@ -11351,6 +11102,48 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         else:
             self.status.set(tr("msg.block.erzeugt", name=name,
                                n=len(definition.elemente)))
+
+    def _variante_anlegen(self, relativ):
+        """Second step of "Add variant": choose the block FILE, add the variant to it and
+        save it again (the file is the source; the library entry is refreshed)."""
+        pfad = filedialog.askopenfilename(
+            parent=self.root, title=tr("dlg.variante.datei.titel"),
+            initialdir=self._block_speicherordner(),
+            filetypes=[(tr("msg.blockdatei.dateityp"), "*" + BLOCK_ENDUNG)])
+        if not pfad:
+            self.status.set(tr("txt.0072"))
+            self._update_eingabe_hinweis()
+            return
+        try:
+            d = block_laden(pfad, self._dict_zu_element)
+        except BlockDateiFehler as ex:
+            messagebox.showerror(tr("msg.blockdatei.titel"),
+                                 tr("msg.blockdatei.fehler", pfad=pfad, fehler=ex),
+                                 parent=self.root)
+            self._update_eingabe_hinweis()
+            return
+        vname = simpledialog.askstring(
+            tr("dlg.variante.name.titel"), tr("dlg.variante.name.frage"),
+            initialvalue=_variantenname(len(d.variante_liste())), parent=self.root)
+        if vname is None:
+            self.status.set(tr("txt.0072"))
+            self._update_eingabe_hinweis()
+            return
+        vp_tags_eindeutig(relativ)
+        vname = d.variante_hinzufuegen(vname, relativ)
+        try:
+            block_speichern(pfad, d)
+        except BlockDateiFehler as ex:
+            messagebox.showerror(tr("msg.blockdatei.titel"),
+                                 tr("msg.blockdatei.fehler", pfad=pfad, fehler=ex),
+                                 parent=self.root)
+            self._update_eingabe_hinweis()
+            return
+        self.block_bibliothek.setze(d)
+        self._config_setzen("block_ordner", os.path.dirname(pfad))
+        self.status.set(tr("msg.variante.fertig", name=d.name, variante=vname,
+                           n=len(d.variante_liste())))
+        self._update_eingabe_hinweis()
 
     def _config_setzen(self, schluessel, wert):
         try:
@@ -11445,10 +11238,8 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         return f"Block{i}"
 
     def block_einfuegen(self):
-        de = SPRACHE["aktuell"] == "de"
         if self._ist_layout():
-            self.status.set(("Bitte in die Modell-Ansicht wechseln." if de
-                             else "Please switch to model view."))
+            self.status.set((tr("txt.0095")))
             return
         self._block_bibliothek_migrieren()
         dlg = BlockBrowserDialog(
@@ -11485,7 +11276,6 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self.entry_eingabe.focus_set()
 
     def _block_einfuegen_an(self, x, y):
-        de = SPRACHE["aktuell"] == "de"
         if not self._block_einfuege_name:
             return
         d = self.block_bibliothek.get(self._block_einfuege_name)
@@ -11495,8 +11285,10 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             self._update_eingabe_hinweis()
             return
         self._snapshot()
-        ref = BlockReferenz(x, y, d.name, d.elemente,
-                            layer=self._block_layer(d.elemente),
+        blk_layer = self._block_layer(d.elemente)
+        self._block_layer_sicherstellen(blk_layer, d)
+        ref = BlockReferenz(x, y, d.name, d.elemente, varianten=d.varianten,
+                            layer=blk_layer,
                             farbe=self.zeichenfarbe,
                             linientyp=self.linientyp.get(),
                             eig_farbe=self.eigene_farbe.get(),
@@ -11516,7 +11308,6 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                            y=y / self._einh_faktor()))
 
     def block_liste(self):
-        de = SPRACHE["aktuell"] == "de"
         self.block_einfuegen()
 
     def block_aufloesen(self):
@@ -11526,10 +11317,8 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         - The exploded children are selected after exploding.
         - If nothing is selected, a hint is shown.
         """
-        de = SPRACHE["aktuell"] == "de"
         if self._ist_layout():
-            self.status.set(("Bitte in die Modell-Ansicht wechseln." if de
-                             else "Please switch to model view."))
+            self.status.set((tr("txt.0095")))
             return
         if not self.auswahl:
             self.status.set(tr("msg.explode.keine_auswahl"))
@@ -11583,22 +11372,17 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
     def eigenschaften_uebertragen_start(self):
         """Pick a source object, then click the objects that receive its
         layer, colour, line type, weight (and text height / hatch pattern)."""
-        de = SPRACHE["aktuell"] == "de"
         self._prop_pick = {"quelle": None, "anzahl": 0}
         if self.aktives_werkzeug.get() != "auswahl":
             self.aktives_werkzeug.set("auswahl")
             self._werkzeug_gewechselt()
-        self.status.set("EIGENSCHAFTEN ÜBERTRAGEN: Quellobjekt anklicken "
-                        "(ESC = abbrechen)." if de else
-                        "MATCH PROPERTIES: click the source object (ESC = cancel).")
+        self.status.set(tr("txt.0054"))
 
     def _eigenschaften_ende(self):
         if self._prop_pick is not None:
             n = self._prop_pick.get("anzahl", 0)
             self._prop_pick = None
-            de = SPRACHE["aktuell"] == "de"
-            self.status.set((f"Eigenschaften auf {n} Objekt(e) übertragen." if de
-                             else f"Properties applied to {n} object(s)."))
+            self.status.set((tr("txt.0132", p0=n)))
 
     def _eigenschaften_anwenden(self, quelle, ziel):
         """Copies the properties of `quelle` onto `ziel`; returns True if
@@ -11616,7 +11400,6 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         return True
 
     def _eigenschaften_klick(self, event):
-        de = SPRACHE["aktuell"] == "de"
         x, y = self.px_to_mm(event.x, event.y)
         el = self._element_unter_maus(x, y, 8 / self.view["zoom"])
         if el is None:
@@ -11626,10 +11409,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             pp["quelle"] = el
             self.auswahl = [el]
             self.redraw()
-            self.status.set("Quelle gewählt. Jetzt die Zielobjekte anklicken "
-                            "(ESC / Rechtsklick = fertig)." if de else
-                            "Source picked. Now click the target objects "
-                            "(ESC / right-click = done).")
+            self.status.set(tr("txt.0133"))
             return
         self._snapshot()
         if self._eigenschaften_anwenden(pp["quelle"], el):
@@ -11644,27 +11424,21 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         if self.ansicht3d_aktiv() and not self._ist_layout():
             self._ansicht3d.modus_setzen("messen")         # 3D: distance of two space points
             return
-        de = SPRACHE["aktuell"] == "de"
         self._mess = {"p1": None, "p2": None}
         if self.aktives_werkzeug.get() != "auswahl":
             self.aktives_werkzeug.set("auswahl")
             self._werkzeug_gewechselt()
         self._mess = {"p1": None, "p2": None}
-        self.status.set("MESSEN: ersten Punkt anklicken (Fang aktiv, "
-                        "ESC = beenden)." if de else
-                        "MEASURE: click the first point (snap active, "
-                        "ESC = finish).")
+        self.status.set(tr("txt.0055"))
 
     def _mess_ende(self, leise=False):
         if getattr(self, "_mess", None) is not None:
             self._mess = None
             self._clear_temp()
             if not leise:
-                de = SPRACHE["aktuell"] == "de"
-                self.status.set("Messen beendet." if de else "Measure finished.")
+                self.status.set(tr("txt.0190"))
 
     def _mess_text(self, p1, p2):
-        de = SPRACHE["aktuell"] == "de"
         m = G2.messung(p1, p2)
         f, u = self._einh_faktor(), self.einheit.get()
         def z(v):
@@ -11672,9 +11446,9 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             return t.replace(".", ",") if self.dezimalkomma.get() else t
         w = f"{m['winkel']:.2f}".replace(".", ",") if self.dezimalkomma.get() \
             else f"{m['winkel']:.2f}"
-        return (f"{'Abstand' if de else 'Distance'} = {z(m['abstand'])} {u}   "
+        return (f"{tr('txt.0134')} = {z(m['abstand'])} {u}   "
                 f"dX = {z(m['dx'])} {u}   dY = {z(m['dy'])} {u}   "
-                f"{'Winkel' if de else 'Angle'} = {w}\u00b0")
+                f"{tr('txt.0135')} = {w}\u00b0")
 
     def _mess_zeichnen(self, p1, p2):
         self._clear_temp()
@@ -11707,21 +11481,17 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self._fadenkreuz(event.x, event.y)
 
     def _mess_klick(self, event):
-        de = SPRACHE["aktuell"] == "de"
         ms = self._mess
         pt = self._eingabepunkt(event, ms["p1"])
         if ms["p1"] is None or ms["p2"] is not None:
             ms["p1"], ms["p2"] = pt, None
             self._clear_temp()
-            self.status.set("MESSEN: zweiten Punkt anklicken." if de else
-                            "MEASURE: click the second point.")
+            self.status.set(tr("txt.0136"))
             return
         ms["p2"] = pt
         self._mess_zeichnen(ms["p1"], pt)
         txt = self._mess_text(ms["p1"], pt)
-        self.status.set("[MESSEN]  " + txt + ("  |  Klick = neue Messung, ESC = "
-                        "beenden" if de else "  |  click = new measurement, "
-                        "ESC = finish"))
+        self.status.set("[MESSEN]  " + txt + (tr("txt.0137")))
         self.messergebnis = txt
 
     # --------------------------------------------------------
@@ -11729,30 +11499,26 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
     # --------------------------------------------------------
     def ecke_start(self, art):
         """ABRUNDEN / FASE: ask for the size, then click two lines."""
-        de = SPRACHE["aktuell"] == "de"
         f, u = self._einh_faktor(), self.einheit.get()
         P = self._ecke_param
         if art == "abrunden":
             r = simpledialog.askfloat(
-                "Abrunden" if de else "Fillet",
-                (f"Radius in {u} (0 = Ecke schließen):" if de
-                 else f"Radius in {u} (0 = join corner):"),
+                tr("txt.0138"),
+                (tr("txt.0139", p0=u)),
                 initialvalue=P["r"] / f, minvalue=0.0, parent=self.root)
             if r is None:
                 return
             P["r"] = r * f
         else:
             d1 = simpledialog.askfloat(
-                "Fase" if de else "Chamfer",
-                (f"Abstand auf der ersten Linie in {u}:" if de
-                 else f"Distance on the first line in {u}:"),
+                tr("txt.0140"),
+                (tr("txt.0141", p0=u)),
                 initialvalue=P["d1"] / f, minvalue=0.0, parent=self.root)
             if d1 is None:
                 return
             d2 = simpledialog.askfloat(
-                "Fase" if de else "Chamfer",
-                (f"Abstand auf der zweiten Linie in {u}:" if de
-                 else f"Distance on the second line in {u}:"),
+                tr("txt.0140"),
+                (tr("txt.0142", p0=u)),
                 initialvalue=d1, minvalue=0.0, parent=self.root)
             if d2 is None:
                 return
@@ -11764,26 +11530,18 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self.status.set(self._ecke_hinweis())
 
     def _ecke_hinweis(self):
-        de = SPRACHE["aktuell"] == "de"
-        name = ("ABRUNDEN" if self._ecke["art"] == "abrunden" else "FASE") if de \
-            else ("FILLET" if self._ecke["art"] == "abrunden" else "CHAMFER")
+        name = (tr("txt.0265") if self._ecke["art"] == "abrunden" else tr("txt.0266"))
         n = "erste" if self._ecke["l1"] is None else "zweite"
         n_en = "first" if self._ecke["l1"] is None else "second"
         if self._ecke["l1"] is None:
-            return (f"{name}: erste Linie anklicken - oder Rechteck/Polylinie "
-                    f"(Ecke = nur diese Ecke, Kante = alle Ecken). ESC = beenden."
-                    if de else
-                    f"{name}: click the first line - or a rectangle/polyline "
-                    f"(corner = that corner only, edge = all corners). ESC = finish.")
-        return (f"{name}: {n} Linie anklicken (ESC = beenden)." if de
-                else f"{name}: click the {n_en} line (ESC = finish).")
+            return (tr("txt.0056", p0=name))
+        return (tr("txt.0006", p0=name, p1=n, p2=n_en))
 
     def _ecke_ende(self, leise=False):
         if getattr(self, "_ecke", None) is not None:
             self._ecke = None
             if not leise:
-                de = SPRACHE["aktuell"] == "de"
-                self.status.set("Beendet." if de else "Finished.")
+                self.status.set(tr("txt.0191"))
 
     @staticmethod
     def _linie_setzen(l, nah, fern):
@@ -11831,10 +11589,9 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
     # --------------------------------------------------------
     def schnellauswahl(self):
         """QSELECT: select all objects with given type/layer/colour/line type."""
-        de = SPRACHE["aktuell"] == "de"
         liste = [e for e in self._aktuelle_elemente_liste() if self._element_sichtbar(e)]
         if not liste:
-            self.status.set("Keine Objekte vorhanden." if de else "No objects.")
+            self.status.set(tr("txt.0143"))
             return
         werte = {k: AUSW.vorhandene_werte(liste, k, self.layers)
                  for k in ("typ", "layer", "farbe", "linientyp")}
@@ -11847,14 +11604,12 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             treffer = list(self.auswahl) + [e for e in treffer if e not in self.auswahl]
         self.auswahl = treffer
         self.redraw()
-        self.status.set(f"{len(treffer)} Objekt(e) ausgewählt." if de
-                        else f"{len(treffer)} object(s) selected.")
+        self.status.set(tr("txt.0057", p0=len(treffer)))
 
     def versatz_start(self):
-        de = SPRACHE["aktuell"] == "de"
         f, u = self._einh_faktor(), self.einheit.get()
-        d = simpledialog.askfloat("Versatz" if de else "Offset",
-                                  f"Abstand in {u}:" if de else f"Distance in {u}:",
+        d = simpledialog.askfloat(tr("txt.0058"),
+                                  tr("txt.0059", p0=u),
                                   initialvalue=self._versatz_d / f, minvalue=1e-6,
                                   parent=self.root)
         if d is None:
@@ -11867,19 +11622,15 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self.status.set(self._versatz_hinweis())
 
     def _versatz_hinweis(self):
-        de = SPRACHE["aktuell"] == "de"
         if self._versatz["el"] is None:
-            return ("VERSATZ: Objekt anklicken (ESC = beenden)." if de
-                    else "OFFSET: click an object (ESC = finish).")
-        return ("VERSATZ: Seite anklicken, auf der die Kopie entstehen soll." if de
-                else "OFFSET: click the side where the copy is to be created.")
+            return (tr("txt.0060"))
+        return (tr("txt.0007"))
 
     def _versatz_ende(self, leise=False):
         if getattr(self, "_versatz", None) is not None:
             self._versatz = None
             if not leise:
-                de = SPRACHE["aktuell"] == "de"
-                self.status.set("Versatz beendet." if de else "Offset finished.")
+                self.status.set(tr("txt.0192"))
 
     def versatz_erzeugen(self, el, klick, d):
         """-> new element (parallel copy of `el` at distance d on the side
@@ -11916,7 +11667,6 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         return None
 
     def _versatz_klick(self, event):
-        de = SPRACHE["aktuell"] == "de"
         x, y = self.px_to_mm(event.x, event.y)
         V = self._versatz
         if V["el"] is None:
@@ -11924,8 +11674,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             if el is None:
                 return
             if not isinstance(el, (Linie, Kreis, Bogen, Rechteck, Polylinie)):
-                self.status.set("Dieses Objekt lässt sich nicht versetzen." if de
-                                else "This object cannot be offset.")
+                self.status.set(tr("txt.0193"))
                 return
             V["el"] = el
             self.auswahl = [el]
@@ -11935,8 +11684,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         pt = self._eingabepunkt(event)
         neu = self.versatz_erzeugen(V["el"], pt, self._versatz_d)
         if neu is None:
-            self.status.set("Versatz nicht möglich (Abstand zu groß?)." if de
-                            else "Offset not possible (distance too large?).")
+            self.status.set(tr("txt.0144"))
         else:
             self._snapshot()
             self._ziel_liste().append(neu)
@@ -11949,7 +11697,6 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
     def _ecke_polygon(self, el, x, y):
         """Rectangle / polyline: click near a corner = only that corner,
         click on an edge = all corners. The object becomes lines and arcs."""
-        de = SPRACHE["aktuell"] == "de"
         if isinstance(el, Rechteck):
             pts = [(el.x1, el.y1), (el.x2, el.y1), (el.x2, el.y2), (el.x1, el.y2)]
             zu = True
@@ -11965,10 +11712,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         art = self._ecke["art"]
         seg, anzahl = G2.ecken_runden(pts, zu, art, P["r"], P["d1"], P["d2"], nur)
         if anzahl == 0:
-            self.status.set("Nicht möglich (Radius/Abstand zu groß, "
-                            "Ecke nicht wählbar oder Wert 0)." if de else
-                            "Not possible (radius/distance too large, corner "
-                            "not selectable or value 0).")
+            self.status.set(tr("txt.0145"))
             return
         self._snapshot()
         kw = dict(layer=el.layer, farbe=el.farbe, linientyp=el.linientyp,
@@ -11987,13 +11731,9 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             liste.extend(neu)
         self.auswahl = []
         self.redraw()
-        self.status.set((f"{anzahl} Ecke(n) bearbeitet (Objekt ist jetzt in Linien "
-                         f"und Bögen aufgelöst)." if de else
-                         f"{anzahl} corner(s) processed (the object is now "
-                         f"split into lines and arcs)."))
+        self.status.set((tr("txt.0061", p0=anzahl)))
 
     def _ecke_klick(self, event):
-        de = SPRACHE["aktuell"] == "de"
         x, y = self.px_to_mm(event.x, event.y)
         el = self._element_unter_maus(x, y, 8 / self.view["zoom"])
         E = self._ecke
@@ -12002,9 +11742,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             self._ecke_polygon(el, x, y)
             return
         if not isinstance(el, Linie):
-            self.status.set("Bitte eine Linie oder ein Rechteck/eine Polylinie "
-                            "anklicken." if de else
-                            "Please click a line, rectangle or polyline.")
+            self.status.set(tr("txt.0146"))
             return
         if E["l1"] is None:
             E["l1"] = el
@@ -12013,8 +11751,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
             self.status.set(self._ecke_hinweis())
             return
         if el is E["l1"]:
-            self.status.set("Zwei verschiedene Linien wählen." if de
-                            else "Pick two different lines.")
+            self.status.set(tr("txt.0115"))
             return
         self._snapshot()
         erg = self.ecke_anwenden(E["l1"], el, E["art"], self._ecke_param)
@@ -12022,33 +11759,24 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self.auswahl = []
         self.redraw()
         if erg is None:
-            self.status.set("Nicht möglich (Linien parallel oder Radius/Abstand "
-                            "zu groß)." if de else
-                            "Not possible (lines parallel or radius/distance "
-                            "too large).")
+            self.status.set(tr("txt.0147"))
         else:
             self.status.set(self._ecke_hinweis())
 
     def _schraffur_pick_start(self):
         """Like AutoCAD: no selection needed - click into a closed area."""
-        de = SPRACHE["aktuell"] == "de"
         dlg = SchraffurDialog(self.root)
         if not dlg.result:
             return
         self._hatch_pick = dlg.result
-        self.status.set("SCHRAFFUR: In einen umschlossenen Bereich klicken "
-                        "(ESC / Rechtsklick = fertig)." if de else
-                        "HATCH: click inside a closed area "
-                        "(ESC / right-click = done).")
+        self.status.set(tr("txt.0062"))
 
     def _schraffur_pick_ende(self):
         if getattr(self, "_hatch_pick", None):
             self._hatch_pick = None
-            de = SPRACHE["aktuell"] == "de"
-            self.status.set("Schraffur beendet." if de else "Hatch finished.")
+            self.status.set(tr("txt.0148"))
 
     def _schraffur_klick(self, event):
-        de = SPRACHE["aktuell"] == "de"
         x, y = self.px_to_mm(event.x, event.y)
         liste = self._aktuelle_elemente_liste()
         sichtbar = [e for e in liste
@@ -12057,8 +11785,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
                              and not self.layers[e.layer].sichtbar)]
         r = bereich_an_punkt(sichtbar, (x, y), tol=0.05)
         if r is None:
-            self.status.set("Kein geschlossener Bereich an dieser Stelle."
-                            if de else "No closed area at this point.")
+            self.status.set(tr("txt.0149"))
             return
         pts, quelle = r
         typ, abstand, winkel = self._hatch_pick
@@ -12071,15 +11798,12 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         liste.insert(idx, sch)
         self.auswahl = [sch]
         self.redraw()
-        self.status.set("Schraffur erstellt - weiteren Bereich anklicken "
-                        "oder ESC." if de else
-                        "Hatch created - click another area or ESC.")
+        self.status.set(tr("txt.0063"))
 
     def schraffur_anwenden(self):
         """Hatch selection: circles, rectangles, closed polylines as well as
         closed contours formed from lines/arcs/open polylines (end points
         must meet)."""
-        de = SPRACHE["aktuell"] == "de"
         kandidaten = [e for e in self.auswahl
                       if isinstance(e, (Polylinie, Rechteck, Kreis, Linie, Bogen))]
         konturen = konturen_aus_elementen(kandidaten, tol=0.05)
@@ -12109,7 +11833,7 @@ class CadApp(AendernMixin, Ansicht3DMixin, ToolbarDockMixin):
         self.auswahl = neue_schraffuren
         self.redraw()
         self.status.set(f"{len(neue_schraffuren)} " +
-                        ("Schraffur(en) erstellt." if de else "hatch(es) created."))
+                        (tr("txt.0150")))
 
 
 # ============================================================

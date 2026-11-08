@@ -1947,6 +1947,7 @@ def _wand_t_anschluss(x, y):
     if x.geschlossen or len(x.punkte) < 2:
         return None
     best = None
+    schon = None
     for idx in (0, -1):
         e = x.punkte[idx]
         v = x.punkte[1] if idx == 0 else x.punkte[-2]
@@ -1970,8 +1971,14 @@ def _wand_t_anschluss(x, y):
             d = math.hypot(ip[0] - e[0], ip[1] - e[1])
             if d > max(x.dicke, y.dicke) * 6.0:
                 continue
+            if d < 0.5:                  # this end already lies on the wall: keep it as fallback
+                if schon is None:
+                    schon = (d, idx, ip)
+                continue
             if best is None or d < best[0]:
                 best = (d, idx, ip)
+    if best is None:
+        best = schon                     # nothing left to attach
     if best is None:
         return None
     return {"modus": "t", "wand": x, "index": best[1], "punkt": best[2]}
@@ -2020,12 +2027,17 @@ def wand_verbinden(a, b):
     if len(a.punkte) < 2 or len(b.punkte) < 2:
         return "zu_kurz"
     r = _wand_l_verbinden(a, b)
-    if isinstance(r, dict) and max(r["da"], r["db"]) <= 3.0 * max(a.dicke, b.dicke):
-        return r                                     # a real corner: merge
     ts = [t for t in (_wand_t_anschluss(a, b), _wand_t_anschluss(b, a)) if t]
-    if ts:
-        return min(ts, key=lambda t: math.hypot(t["punkt"][0] - t["wand"].punkte[t["index"]][0],
-                                                t["punkt"][1] - t["wand"].punkte[t["index"]][1]))
+    def _weg(t):
+        return math.hypot(t["punkt"][0] - t["wand"].punkte[t["index"]][0],
+                          t["punkt"][1] - t["wand"].punkte[t["index"]][1])
+    offen = [t for t in ts if _weg(t) >= 0.5]       # ends that do not touch the other wall yet
+    t_best = min(offen or ts, key=_weg) if ts else None
+    l_ok = isinstance(r, dict) and max(r["da"], r["db"]) <= 3.0 * max(a.dicke, b.dicke)
+    if l_ok:
+        return r                                     # a real corner: merge
+    if t_best is not None:
+        return t_best
     return r
 
 
@@ -2042,44 +2054,68 @@ def _wand_l_verbinden(a, b):
         return "zu_kurz"
     if a.geschlossen or b.geschlossen:
         return "geschlossen"
-    best = None
+    limit = max(a.dicke, b.dicke) * 6.0
+    tausch = {"links": "rechts", "rechts": "links", "mitte": "mitte"}
+
+    def versuch(ea, eb):
+        """Join at the ends ea of a and eb of b -> dict or error key."""
+        pa = list(a.punkte)
+        pb = list(b.punkte)
+        rev_a = ea == 0                  # a must end at the joint
+        rev_b = eb == -1                 # b must start at the joint
+        if rev_a:
+            pa.reverse()
+        if rev_b:
+            pb.reverse()
+        x = _gerade_schnitt(pa[-2], pa[-1], pb[0], pb[1])
+        if x is None:                    # parallel: only a short straight bridge is allowed
+            br = (pb[0][0] - pa[-1][0], pb[0][1] - pa[-1][1])
+            d = math.hypot(*br)
+            if d > limit:
+                return "parallel"
+            if d > 1e-6:
+                # the bridge must continue in the direction of both walls, otherwise the
+                # new wall would double back over itself
+                ua = (pa[-1][0] - pa[-2][0], pa[-1][1] - pa[-2][1])
+                ub = (pb[1][0] - pb[0][0], pb[1][1] - pb[0][1])
+                if (br[0] * ua[0] + br[1] * ua[1] <= 0 or br[0] * ub[0] + br[1] * ub[1] <= 0):
+                    return "parallel"
+            punkte = pa + pb
+            da = db = d
+        else:
+            if (math.hypot(x[0] - pa[-1][0], x[1] - pa[-1][1]) > limit
+                    or math.hypot(x[0] - pb[0][0], x[1] - pb[0][1]) > limit):
+                return "zu_weit"
+            punkte = pa[:-1] + [x] + pb[1:]
+            da = math.hypot(x[0] - pa[-1][0], x[1] - pa[-1][1])
+            db = math.hypot(x[0] - pb[0][0], x[1] - pb[0][1])
+        sauber = [punkte[0]]
+        for q in punkte[1:]:
+            if math.hypot(q[0] - sauber[-1][0], q[1] - sauber[-1][1]) > 1e-6:
+                sauber.append(q)
+        return {"punkte": sauber, "rev_a": rev_a, "rev_b": rev_b, "dicke": a.dicke,
+                "ausrichtung": tausch[a.ausrichtung] if rev_a else a.ausrichtung,
+                "da": da, "db": db}
+
+    # all four end combinations are tried; the cheapest valid one wins (the nearest
+    # pair of ends can be the wrong one, e.g. when a wall runs on past the joint)
+    gut = None
+    fehler = None
+    nah = None
     for ea in (0, -1):
         for eb in (0, -1):
-            pa, pb = a.punkte[ea], b.punkte[eb]
-            dist = math.hypot(pa[0] - pb[0], pa[1] - pb[1])
-            if best is None or dist < best[0]:
-                best = (dist, ea, eb)
-    _d, ea, eb = best
-    pa = list(a.punkte)
-    pb = list(b.punkte)
-    rev_a = ea == 0                  # a must end at the joint
-    rev_b = eb == -1                 # b must start at the joint
-    if rev_a:
-        pa.reverse()
-    if rev_b:
-        pb.reverse()
-    limit = max(a.dicke, b.dicke) * 6.0
-    x = _gerade_schnitt(pa[-2], pa[-1], pb[0], pb[1])
-    if x is None:                    # parallel: only a short straight bridge is allowed
-        if math.hypot(pa[-1][0] - pb[0][0], pa[-1][1] - pb[0][1]) > limit:
-            return "parallel"
-        punkte = pa + pb
-        da = db = math.hypot(pa[-1][0] - pb[0][0], pa[-1][1] - pb[0][1])
-    else:
-        if (math.hypot(x[0] - pa[-1][0], x[1] - pa[-1][1]) > limit
-                or math.hypot(x[0] - pb[0][0], x[1] - pb[0][1]) > limit):
-            return "zu_weit"
-        punkte = pa[:-1] + [x] + pb[1:]
-        da = math.hypot(x[0] - pa[-1][0], x[1] - pa[-1][1])
-        db = math.hypot(x[0] - pb[0][0], x[1] - pb[0][1])
-    sauber = [punkte[0]]
-    for p in punkte[1:]:
-        if math.hypot(p[0] - sauber[-1][0], p[1] - sauber[-1][1]) > 1e-6:
-            sauber.append(p)
-    tausch = {"links": "rechts", "rechts": "links", "mitte": "mitte"}
-    return {"punkte": sauber, "rev_a": rev_a, "rev_b": rev_b, "dicke": a.dicke,
-            "ausrichtung": tausch[a.ausrichtung] if rev_a else a.ausrichtung,
-            "da": da, "db": db}
+            pa_, pb_ = a.punkte[ea], b.punkte[eb]
+            dist = math.hypot(pa_[0] - pb_[0], pa_[1] - pb_[1])
+            r = versuch(ea, eb)
+            if nah is None or dist < nah[0]:
+                nah = (dist, r)
+            if isinstance(r, dict):
+                kosten = r["da"] + r["db"]
+                if gut is None or kosten < gut[0]:
+                    gut = (kosten, r)
+    if gut is not None:
+        return gut[1]
+    return nah[1]
 
 
 def wand_in_linien(elemente):
@@ -2714,6 +2750,11 @@ def _attribut_defs(elemente):
     return out
 
 
+def _variantenname(i):
+    """A, B, C ... (then A2, B2 ...)."""
+    return chr(65 + i % 26) + (str(i // 26 + 1) if i >= 26 else "")
+
+
 class BlockDefinition:
     """Named template of a block.
 
@@ -2722,10 +2763,36 @@ class BlockDefinition:
     This greatly simplifies transforming them later on insertion.
     """
 
-    def __init__(self, name, basispunkt, elemente):
+    def __init__(self, name, basispunkt, elemente, varianten=None):
         self.name = name
         self.basispunkt = tuple(basispunkt)
         self.elemente = list(elemente)
+        # Variants (like EPLAN): [(variant name, [elements])]; empty = only one variant.
+        # `elemente` is always the first variant.
+        self.varianten = [(str(n), list(e)) for n, e in (varianten or [])]
+        if len(self.varianten) < 2:
+            self.varianten = []
+        else:
+            self.elemente = self.varianten[0][1]
+
+    def variante_liste(self):
+        """All variants [(name, elements)] (at least one)."""
+        return self.varianten or [("A", self.elemente)]
+
+    def variante_hinzufuegen(self, name, elemente):
+        """Adds a variant (a name that already exists is replaced)."""
+        liste = list(self.variante_liste())
+        name = str(name or "").strip() or _variantenname(len(liste))
+        neu = (name, list(elemente))
+        for i, (n, _e) in enumerate(liste):
+            if n == name:
+                liste[i] = neu
+                break
+        else:
+            liste.append(neu)
+        self.varianten = liste if len(liste) > 1 else []
+        self.elemente = liste[0][1]
+        return name
 
     def attribut_definitionen(self):
         """All attributes of this block definition (incl. the fixed fields
@@ -2733,11 +2800,15 @@ class BlockDefinition:
         return _attribut_defs(self.elemente)
 
     def to_dict(self):
-        return {
+        d = {
             "name": self.name,
             "basispunkt": list(self.basispunkt),
             "elemente": [e.to_dict() for e in self.elemente],
         }
+        if self.varianten:
+            d["varianten"] = [{"name": n, "elemente": [e.to_dict() for e in els]}
+                              for n, els in self.varianten]
+        return d
 
     @classmethod
     def from_dict(cls, d, element_factory):
@@ -2746,9 +2817,15 @@ class BlockDefinition:
             el = element_factory(ed)
             if el is not None:
                 els.append(el)
+        var = []
+        for vd in d.get("varianten") or []:
+            ve = [el for el in (element_factory(ed) for ed in vd.get("elemente", []))
+                  if el is not None]
+            if ve:
+                var.append((str(vd.get("name", "")), ve))
         return cls(d.get("name", "Block"),
                    tuple(d.get("basispunkt", (0.0, 0.0))),
-                   els)
+                   els, var)
 
 
 class BlockReferenz(Element):
@@ -2764,7 +2841,7 @@ class BlockReferenz(Element):
     def __init__(self, x, y, block_name, elemente,
                  skalierung=1.0, winkel=0.0, attribute=None,
                  ausgeblendet=None, sp_dx=0.0, sp_dy=0.0, gespiegelt=False,
-                 text_versatz=None, **kw):
+                 text_versatz=None, varianten=None, variante=0, **kw):
         super().__init__("block", **kw)
         # Free text positions of THIS instance: {"M:IND": [dx, dy], "V:VP1": ...,
         # "A:TAG": ...}; M = mask/terminal field, V = pin label, A = attribute
@@ -2777,6 +2854,17 @@ class BlockReferenz(Element):
         self.block_name = block_name
         # deep copy so that the reference is truly independent
         self.elemente = [deepcopy(e) for e in elemente]
+        # Variants of the block definition (self-contained copy): [(name, [elements])];
+        # `variante` = index of the active one, `elemente` = its elements
+        self.varianten = [(str(n), [deepcopy(e) for e in els]) for n, els in (varianten or [])]
+        if len(self.varianten) < 2:
+            self.varianten = []
+        try:
+            self.variante = int(variante)
+        except (TypeError, ValueError):
+            self.variante = 0
+        if not (0 <= self.variante < len(self.varianten)):
+            self.variante = 0
         self.skalierung = float(skalierung) if skalierung else 1.0
         self.winkel = float(winkel) if winkel else 0.0
         # Attribute values of this instance: {TAG: value}
@@ -2788,6 +2876,60 @@ class BlockReferenz(Element):
         self._cache = None          # (signature, resolved children)
         self.refs = []              # Device references (sheet numbers), computed
         self.kontakte = []          # Contact mirror entries (art, pins, ort), computed
+
+    # ---- Variants ----------------------------------------------
+    def uebernimm_varianten(self, definition):
+        """Takes over the variants of a block definition (on insertion)."""
+        self.varianten = [(n, [deepcopy(e) for e in els])
+                          for n, els in getattr(definition, "varianten", [])]
+        self.variante = 0
+        if self.varianten:
+            self.elemente = [deepcopy(e) for e in self.varianten[0][1]]
+        for ad in self.attribut_definitionen():
+            self.attribute.setdefault(ad.tag, ad.wert)
+
+    def varianten_abgleichen(self, definition):
+        """Takes over variants that were added to the block definition after this instance
+        was placed (only if the definition has all variant names of the instance, plus new
+        ones). The active variant and everything else of the instance stay unchanged.
+        Returns True if something changed."""
+        neu = getattr(definition, "varianten", None) or []
+        if not neu:
+            return False
+        alt_namen = self.variantennamen() or ["A"]
+        neu_namen = [n for n, _e in neu]
+        if len(neu_namen) <= len(alt_namen) or not set(alt_namen) <= set(neu_namen):
+            return False
+        aktiv = alt_namen[self.variante] if self.varianten else alt_namen[0]
+        self.varianten = [(n, [deepcopy(e) for e in els]) for n, els in neu]
+        self.variante = neu_namen.index(aktiv) if aktiv in neu_namen else 0
+        self._cache = None
+        return True
+
+    def variantennamen(self):
+        return [n for n, _e in self.varianten]
+
+    def setze_variante(self, index):
+        """Switches the variant. Attribute values stay, free text positions of the
+        old variant are dropped (the texts of the new one are already placed)."""
+        if not self.varianten or not (0 <= index < len(self.varianten)) \
+                or index == self.variante:
+            return False
+        alt = self.geraet_maske()
+        self.variante = index
+        self.elemente = [deepcopy(e) for e in self.varianten[index][1]]
+        neu = self.geraet_maske()
+        if alt is not None and neu is not None:       # device settings belong to the device
+            for f in ("rolle", "spiegel", "einpolig", "pole"):
+                if hasattr(alt, f):
+                    setattr(neu, f, getattr(alt, f))
+        self.text_versatz = {}
+        self.ausgeblendet = {t for t in self.ausgeblendet
+                             if t in {ad.tag for ad in self.attribut_definitionen()}}
+        for ad in self.attribut_definitionen():
+            self.attribute.setdefault(ad.tag, ad.wert)
+        self._cache = None
+        return True
 
     # ---- Attributes --------------------------------------------
     def attribut_definitionen(self):
@@ -2868,6 +3010,15 @@ class BlockReferenz(Element):
             el.x, el.y = self._welt_pts(el.x, el.y)
             el.hoehe *= self.skalierung
             el.winkel = (el.winkel + self.winkel) % 360.0
+            if (self.winkel % 360.0 and not isinstance(el, Verbindungspunkt)
+                    and 90.0 + 1e-6 < el.winkel < 270.0 - 1e-6):
+                # never upside down: turn the text by 180 deg and mirror its anchor, so it
+                # stays on the same side of its insertion point
+                el.winkel = (el.winkel + 180.0) % 360.0
+                v, h = el.einfuegepunkt.split("_")
+                v = {"unten": "oben", "oben": "unten"}.get(v, v)
+                h = {"links": "rechts", "rechts": "links"}.get(h, h)
+                el.einfuegepunkt = v + "_" + h
             if isinstance(el, Verbindungspunkt):
                 el.radius *= self.skalierung
                 if el.richtungen is not None:
@@ -2909,7 +3060,7 @@ class BlockReferenz(Element):
         # call this on every mouse movement - without a cache thousands
         # of deep copies would be created (memory pressure with many symbols).
         # The list is READ-ONLY (when resolving: copy first).
-        sig = (self.x, self.y, self.skalierung, self.winkel,
+        sig = (self.x, self.y, self.skalierung, self.winkel, self.variante,
                tuple(sorted(self.attribute.items())),
                tuple(sorted(self.ausgeblendet)), tuple(self.refs),
                tuple((a, tuple(p), tuple(o) if isinstance(o, (tuple, list)) else o)
@@ -3049,6 +3200,12 @@ class BlockReferenz(Element):
         d["ausgeblendet"] = sorted(self.ausgeblendet)
         # Store children as dicts (not the objects themselves)
         d["elemente"] = [e.to_dict() for e in self.elemente]
+        if self.varianten:
+            d["varianten"] = [{"name": n, "elemente": [e.to_dict() for e in els]}
+                              for n, els in self.varianten]
+        else:
+            d.pop("varianten", None)
+            d.pop("variante", None)
         return d
 
 

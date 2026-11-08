@@ -35,7 +35,7 @@ How to make your own:
    | `FIRMA` / `COMPANY`, `KUNDE` / `CUSTOMER`, `AUFTRAG` / `ORDER`, `ANLAGE` / `PLANT`, `REVISION` | project data |
    | `FORMAT`, `BLATTFORMAT`, `PAPIERFORMAT`, `SIZE` | paper format of the layout, e.g. `A0` |
    | `TITLE` / `TITEL` | customer - project name - sheet name |
-   | `TITEL1`, `TITEL2`, `TITEL3` (`TITLE1`..`3`) | the three parts alone: customer, project name, sheet name |
+   | `TITLE1`, `TITLE2`, `TITLE3` (German alias `TITEL1`..`3`) | the three parts alone: customer, project name, sheet name |
    | `REV1_STAND`, `REV1_AENDERUNG`, `REV1_NAME`, `REV1_DATUM` (English: `REV1_INDEX`, `REV1_CHANGE`, `REV1_NAME`, `REV1_DATE`) | revision table, rows `REV1` to `REV4` |
 
    Spelling is tolerant: case, underscores, hyphens and umlauts do not matter

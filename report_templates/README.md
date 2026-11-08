@@ -42,8 +42,8 @@ brackets, e.g. `K1:13 (W1/L1)`.
 ## Notes
 
 * Title block: the report sheets use the title block template you choose in the
-  dialog. Tags filled automatically: `TITEL1` (report name), `TITEL2` (plant),
-  `TITEL3` (customer), `GEZEICHNET`/`DRAWN`, `GEPRUEFT`/`VERIFIED`,
+  dialog. Tags filled automatically: `TITLE1` (report name), `TITLE2` (plant),
+  `TITLE3` (customer) (German aliases `TITEL1`..`3` work as well), `GEZEICHNET`/`DRAWN`, `GEPRUEFT`/`VERIFIED`,
   `ZEICHNUNGSNUMMER`/`DRAWINGNUMBER`, `FIRMA`, `KUNDE`, `AUFTRAG`, `ANLAGE`,
   `REVISION` and the page tags `PAGE`/`SEITE`, `PAGES`/`SEITEN`, `FORMAT`/`SIZE`.
 * The printable area is the A4 frame minus the height of the title block.

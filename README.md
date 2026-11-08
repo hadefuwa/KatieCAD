@@ -38,7 +38,7 @@ KatieCAD brings everything you need for daily work into one tool: electrical dia
 - **Blocks with attributes:** create, save (`*.katieblock`) and reuse
 - **Layout view:** Paper space with viewports, standard scales, title block
 - **DXF import/export** (via `ezdxf`), **DWG import** (via `ezdwg`)
-- **Bilingual UI:** German and English (switchable at runtime)
+- **Multilingual UI:** German, English and Spainish (switchable at runtime)
 - **Freely dockable toolbars:** separate bars for tools, electrical and 3D – top, bottom or right, in any order
 
 ### Simple 3D modelling

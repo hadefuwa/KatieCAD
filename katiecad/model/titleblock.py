@@ -26,13 +26,14 @@ Rules for a template drawing
         REV1_STAND/AENDERUNG/NAME/DATUM ... REV4_*   (English: INDEX, CHANGE,
         NAME, DATE)
         TITLE / TITEL = customer - project - sheet name; the parts alone are
-        TITEL1 / TITEL2 / TITEL3 (TITLE1..3)
+        TITLE1 / TITLE2 / TITLE3 (German alias: TITEL1 / TITEL2 / TITEL3)
 """
 
 import json
 import math
 import os
 import datetime
+from katiecad.common.i18n import datum_text
 
 from katiecad.model.core import (
     BlockReferenz, Viewport, Linie, Rechteck, Text, AttributDefinition,
@@ -64,7 +65,7 @@ REV_FIELDS = (("stand", ("STAND", "INDEX")),   # project key -> tag suffixes
               ("datum", ("DATUM", "DATE")))
 FORMAT_TAGS = ("FORMAT", "SIZE", "BLATTFORMAT", "PAPIERFORMAT", "PAPER")
 TITLE_TAGS = ("TITLE", "TITEL")                # kunde - project - sheet
-TITLE_PARTS = (("TITEL1", "TITLE1"), ("TITEL2", "TITLE2"), ("TITEL3", "TITLE3"))
+TITLE_PARTS = (("TITEL1", "TITLE1"), ("TITEL2", "TITLE2"), ("TITEL3", "TITLE3"))   # (German alias, English)
 TITLE_SEPARATOR = " - "
 
 
@@ -251,14 +252,15 @@ def template_data(elements):
 # Built-in default template
 # ---------------------------------------------------------------
 def default_elements(lang="en"):
-    de = lang == "de"
-    L = {"project": "Projekt" if de else "Project",
-         "title": "Titel" if de else "Title",
-         "date": "Datum" if de else "Date",
-         "drawn": "Gezeichnet" if de else "Drawn by",
-         "sheet": "Blatt" if de else "Sheet",
-         "scale": "Maßstab" if de else "Scale",
-         "page": "Seite" if de else "Page"}
+    i = {"de": 0, "es": 2}.get(lang, 1)          # German / English (default) / Spanish
+    _w = {"project": ("Projekt", "Project", "Proyecto"),
+          "title": ("Titel", "Title", "Título"),
+          "date": ("Datum", "Date", "Fecha"),
+          "drawn": ("Gezeichnet", "Drawn by", "Dibujado por"),
+          "sheet": ("Blatt", "Sheet", "Hoja"),
+          "scale": ("Maßstab", "Scale", "Escala"),
+          "page": ("Seite", "Page", "Página")}
+    L = {k: v[i] for k, v in _w.items()}
     thick = {"layer": "0", "farbe": ZEICHEN_FARBE, "eig_farbe": True,
              "linientyp": "Volllinie (breit)", "staerke": 0.7}
     thin = {"layer": "0", "farbe": ZEICHEN_FARBE, "eig_farbe": True,
@@ -309,7 +311,7 @@ def daten_werte(daten, projekt, sheet, lang="en", today=None):
     if daten is None:                  # no project: leave all fields alone
         return {}
     today = today or datetime.date.today()
-    kurz = today.strftime("%d.%m.%Y") if lang == "de" else today.strftime("%Y-%m-%d")
+    kurz = datum_text(today, lang)
     d = dict(daten)
     if d.get("gezeichnet") or d.get("datum"):
         d["gezeichnet_datum"] = (d.get("gezeichnet_datum") or d.get("datum")
@@ -344,7 +346,7 @@ def info_values(nr, total, sheet, project, lang="en", paper_format="", today=Non
                 daten=None, einbauort=None):
     """Values for the reserved tags from plain numbers / names."""
     today = today or datetime.date.today()
-    date = today.strftime("%d.%m.%Y") if lang == "de" else today.strftime("%Y-%m-%d")
+    date = datum_text(today, lang)
     short = (paper_format or "").split(" ")[0]
     out = daten_werte(daten, project, sheet, lang, today)
     out.update({"PAGE": str(nr), "PAGES": str(total), "SHEET": sheet,
